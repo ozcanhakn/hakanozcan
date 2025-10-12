@@ -62,8 +62,12 @@ export default function Projects() {
                 Projeyi Gör
             </button>
           <div className="w-full h-80 rounded-xl mb-6 flex items-center justify-center overflow-hidden">
-            {/* Görsel buraya eklenecek */}
-            <span className="text-gray-400">[ Proje Görseli ]</span>
+            <Image
+            src="/orcaaiphoto.png"
+            alt="orcaai"
+            width={1024}
+            height={512}/>
+        
           </div>
           <div className="flex flex-wrap justify-center gap-2">
             <span className="bg-white text-sm text-gray-700 px-3 py-1 rounded-full border border-gray-300">
