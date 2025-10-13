@@ -25,7 +25,7 @@ export default function ExperienceSection() {
   ]
 
   return (
-    <section className="bg-[#F5F5F7] text-[#1F1F1F] py-24 px-6">
+    <section className="bg-[#FFFFFF] text-[#1F1F1F] py-24 px-6">
       <div className="max-w-5xl mx-auto">
         <h2 className="text-5xl md:text-4xl font-bold mb-16 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
         Deneyim
