@@ -27,15 +27,15 @@ export default function Navbar() {
         {/* Sol: Logo + İsim */}
         <div className="flex items-center gap-2 z-10">
           <Image src="/logo.svg" alt="logo" width={24} height={24} />
-          <p style={{ color: "#D1D1D1" }} className="text-sm font-medium">
+          <Link href="/" className="text-sm font-medium" style={{ color: "#D1D1D1" }}>
             Hakan ÖZCAN
-          </p>
+          </Link>
         </div>
 
         {/* Orta: Menü */}
         <div className="absolute left-1/2 transform -translate-x-1/2 flex gap-6">
           <Link
-            href="/main"
+            href="/"
             className="text-sm transition-colors duration-200"
             style={{ color: "#D1D1D1" }}
           >
@@ -56,7 +56,7 @@ export default function Navbar() {
             <span className="hover:text-white">Blog</span>
           </Link>
           <Link
-            href="/"
+            href="/contact"
             className="text-sm transition-colors duration-200"
             style={{ color: "#D1D1D1" }}
           >
