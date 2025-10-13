@@ -45,7 +45,7 @@ export default function BlogSection() {
     <section className="w-full bg-[#FFFFFF] text-[#1F1F1F] py-20 px-8">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-5xl md:text-6xl font-semibold mb-12 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-          Blog
+
         </h2>
 
         {displayedBlogs.length > 0 ? (
