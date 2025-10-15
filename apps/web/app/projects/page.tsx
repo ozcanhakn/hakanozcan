@@ -24,7 +24,7 @@ const projects: Project[] = [
     description: "AI destekli görev ve iş yönetim uygulaması.",
     image: "/assistlydemo.png",
     tech: "React • Next.js • Tailwind • Clerk • Convex • Sentry • AWS • Turbo • Vercel",
-    githubUrl: "https://github.com/username/assistyl",
+    githubUrl: "https://github.com/ozcanhakn/assistly",
     category: "fullstack"
   },
   {
@@ -34,7 +34,7 @@ const projects: Project[] = [
     description: "AI isteklerini maliyet, hız ve kaliteye göre en uygun sağlayıcıya yönlendiren akıllı AI orkestrasyon platformu.",
     image: "/orcaaiphoto.png",
     tech: "GO • Python • Node.js • PostgreSQL • Redis • Docker • Kubernetes",
-    githubUrl: "https://github.com/username/orcaai",
+    githubUrl: "https://github.com/ozcanhakn/orcaai",
     category: "ai"
   },
   {
@@ -44,7 +44,7 @@ const projects: Project[] = [
     description: "Spring Boot ile geliştirilmiş, RBAC ve denetim günlüğü özelliklerine sahip kurumsal düzeyde Öğrenme Yönetim Sistemi backend'i.",
     image: "/lmsbackend.png",
     tech: "Java • Spring Boot • PostgreSQL • Docker • Redis • RBAC • JWT • Maven",
-    githubUrl: "https://github.com/username/lms-backend",
+    githubUrl: "https://github.com/ozcanhakn/lms-backend",
     category: "backend"
   },
   {
@@ -54,7 +54,7 @@ const projects: Project[] = [
     description: "Dosya & Entegrasyon sayesinde, +50 farklı KPI ve istatistik sunabilen bir veri analiz platformu.",
     image: "/retailmindaiphoto.png",
     tech: "Python • Node.js • DrizzleORM • Typescript",
-    githubUrl: "https://github.com/username/retailmind-ai",
+    githubUrl: "https://github.com/ozcanhakn/retailmind-ai",
     category: "fullstack"
   },
   {
