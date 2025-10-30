@@ -66,7 +66,19 @@ const projects: Project[] = [
     tech: "Python • FastAPI • LangChain • OpenAI GPT-4 • dotenv",
     githubUrl: "https://github.com/ozcanhakn/doktorassistant",
     category: "ai"
-  }
+  },
+  {
+  id: "6",
+  title: "Intria",
+  slug: "intria",
+  description:
+    "Gerçek zamanlı makroekonomik verileri, piyasa göstergelerini ve yapay zekâ yorumlarını tek bir analiz panelinde birleştiren gelişmiş karar destek platformu.",
+  image: "/intriaphoto.png",
+  tech:
+    "Next.js 15 • TypeScript • Tailwind • shadcn/ui • Convex • TurboRepo • OpenAI API • SWR • Finance APIs • Vercel",
+  githubUrl: "https://github.com/ozcanhakn/intria",
+  category: "fullstack"
+}
 ];
 
 const categories = [
