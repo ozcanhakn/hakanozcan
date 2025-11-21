@@ -1,9 +1,10 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Project {
   id: string;
@@ -68,17 +69,17 @@ const projects: Project[] = [
     category: "ai"
   },
   {
-  id: "6",
-  title: "Intria",
-  slug: "intria",
-  description:
-    "Gerçek zamanlı makroekonomik verileri, piyasa göstergelerini ve yapay zekâ yorumlarını tek bir analiz panelinde birleştiren gelişmiş karar destek platformu.",
-  image: "/intriaphoto.png",
-  tech:
-    "Next.js 15 • TypeScript • Tailwind • shadcn/ui • Convex • TurboRepo • OpenAI API • SWR • Finance APIs • Vercel",
-  githubUrl: "https://github.com/ozcanhakn/intria",
-  category: "fullstack"
-}
+    id: "6",
+    title: "Intria",
+    slug: "intria",
+    description:
+      "Gerçek zamanlı makroekonomik verileri, piyasa göstergelerini ve yapay zekâ yorumlarını tek bir analiz panelinde birleştiren gelişmiş karar destek platformu.",
+    image: "/intriaphoto.png",
+    tech:
+      "Next.js 15 • TypeScript • Tailwind • shadcn/ui • Convex • TurboRepo • OpenAI API • SWR • Finance APIs • Vercel",
+    githubUrl: "https://github.com/ozcanhakn/intria",
+    category: "fullstack"
+  }
 ];
 
 const categories = [
@@ -88,10 +89,93 @@ const categories = [
   { id: "backend", label: "Backend Sistemleri" }
 ];
 
+function ProjectCard({ project }: { project: Project }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseX = useSpring(x, { stiffness: 500, damping: 100 });
+  const mouseY = useSpring(y, { stiffness: 500, damping: 100 });
+
+  function onMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
+    const { left, top, width, height } = currentTarget.getBoundingClientRect();
+    x.set(clientX - left - width / 2);
+    y.set(clientY - top - height / 2);
+  }
+
+  function onMouseLeave() {
+    x.set(0);
+    y.set(0);
+  }
+
+  const rotateX = useTransform(mouseY, [-300, 300], [5, -5]);
+  const rotateY = useTransform(mouseX, [-300, 300], [-5, 5]);
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      className="group relative h-full"
+    >
+      <Link href={`/projects/${project.slug}`} className="block h-full">
+        <div className="relative h-full bg-white/5 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-sm hover:border-white/20 transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+          {/* Image Container */}
+          <div className="relative h-64 overflow-hidden">
+            <Image
+              src={project.image}
+              alt={project.title}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
+
+            {/* Floating Badge */}
+            <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/50 border border-white/10 backdrop-blur-md text-xs font-medium text-white">
+              {project.category.toUpperCase()}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-8 relative">
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors">
+                {project.title}
+              </h3>
+              <p className="text-gray-400 text-sm leading-relaxed line-clamp-3">
+                {project.description}
+              </p>
+            </div>
+
+            {/* Tech Stack */}
+            <div className="pt-6 border-t border-white/5">
+              <p className="text-xs text-gray-500 font-mono">
+                {project.tech}
+              </p>
+            </div>
+
+            {/* Action Icon */}
+            <div className="absolute bottom-8 right-8 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+              <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center">
+                <ArrowUpRight size={20} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
 export default function Projects() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [filteredProjects, setFilteredProjects] = useState<Project[]>(projects);
-  const [isInitial, setIsInitial] = useState(true);
 
   useEffect(() => {
     if (selectedCategory === "all") {
@@ -99,202 +183,72 @@ export default function Projects() {
     } else {
       setFilteredProjects(projects.filter(project => project.category === selectedCategory));
     }
-    
-    if (isInitial) {
-      setIsInitial(false);
-    }
-  }, [selectedCategory, isInitial]);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 20 
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-    }
-  };
-
-  const handleGithubClick = (e: React.MouseEvent, url?: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
-  };
-
-  const handleCategoryClick = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-  };
+  }, [selectedCategory]);
 
   return (
-    <section className="w-full bg-white text-[#1F1F1F] py-32 px-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Başlık */}
+    <section className="min-h-screen w-full bg-black text-white py-32 px-6 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-blue-900/20 to-transparent pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
           className="text-center mb-20"
         >
-          <h1 className="text-6xl md:text-7xl font-semibold mb-6 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent">
-            Projeler
+          <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/10 tracking-tighter">
+            PROJELER
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Modern teknolojilerle geliştirdiğim, kullanıcı deneyimini ön planda tutan özenle tasarlanmış projeler.
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto font-light">
+            Dijital dünyada iz bırakan, teknoloji ve tasarımın sınırlarını zorlayan çalışmalarım.
           </p>
         </motion.div>
 
-        {/* Kategori Filtreleri */}
+        {/* Filters */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: true }}
-          className="flex flex-wrap justify-center gap-4 mb-16"
+          className="flex flex-wrap justify-center gap-4 mb-20"
         >
           {categories.map((category) => (
             <button
               key={category.id}
-              onClick={() => handleCategoryClick(category.id)}
-              className={`px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 ${
-                selectedCategory === category.id
-                  ? "bg-gray-900 text-white shadow-lg"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800"
-              }`}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`px-8 py-3 rounded-full text-sm font-bold tracking-wide transition-all duration-300 border ${selectedCategory === category.id
+                  ? "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                  : "bg-transparent text-gray-500 border-white/10 hover:border-white/30 hover:text-white"
+                }`}
             >
-              {category.label}
+              {category.label.toUpperCase()}
             </button>
           ))}
         </motion.div>
 
-        {/* Proje Grid */}
+        {/* Grid */}
         <AnimatePresence mode="wait">
           <motion.div
             key={selectedCategory}
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
             {filteredProjects.map((project) => (
-              <motion.div
-                key={project.id}
-                variants={itemVariants}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="group relative bg-gradient-to-br from-white to-gray-50 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100"
-              >
-                {/* Proje Görseli */}
-                <div className="relative h-64 overflow-hidden">
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
-                  {/* GitHub Butonu */}
-                  {project.githubUrl && (
-                    <button
-                      onClick={(e) => handleGithubClick(e, project.githubUrl)}
-                      className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-sm text-gray-900 px-4 py-2 rounded-full text-sm font-medium hover:bg-white hover:scale-105 transition-all duration-300 shadow-lg"
-                    >
-                      <span className="flex items-center gap-2">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                        </svg>
-                        Kodları Gör
-                      </span>
-                    </button>
-                  )}
-                </div>
-
-                {/* Proje İçerik */}
-                <div className="p-6">
-                  <div className="mb-4">
-                    <h3 className="text-xl font-semibold mb-3 text-gray-900 group-hover:text-gray-700 transition-colors duration-300">
-                      {project.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed text-sm">
-                      {project.description}
-                    </p>
-                  </div>
-
-                  {/* Teknoloji Stack */}
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <p className="text-xs text-gray-500 font-medium">
-                      {project.tech}
-                    </p>
-                  </div>
-
-                  {/* Detay Link */}
-                  <Link 
-                    href={`/projects/${project.slug}`}
-                    className="inline-flex items-center gap-2 mt-4 text-gray-900 font-medium hover:text-gray-700 transition-colors duration-300 group/link text-sm"
-                  >
-                    <span>Detayları Gör</span>
-                    <svg 
-                      className="w-3 h-3 transition-transform duration-300 group-hover/link:translate-x-1" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                </div>
-
-                {/* Hover Efekti */}
-                <div className="absolute inset-0 border-2 border-transparent group-hover:border-gray-200 rounded-3xl transition-all duration-500 pointer-events-none" />
-              </motion.div>
+              <ProjectCard key={project.id} project={project} />
             ))}
           </motion.div>
         </AnimatePresence>
 
-        {/* Boş State */}
+        {/* Empty State */}
         {filteredProjects.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-20"
-          >
-            <p className="text-gray-500 text-lg">
-              Bu kategoride henüz proje bulunmuyor.
-            </p>
-          </motion.div>
+          <div className="text-center py-20">
+            <p className="text-gray-500 text-lg">Bu kategoride henüz proje bulunmuyor.</p>
+          </div>
         )}
-
-        {/* Footer Not */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          viewport={{ once: true }}
-          className="text-center mt-20 pt-8 border-t border-gray-100"
-        >
-          <p className="text-gray-500 text-lg">
-            Daha fazla proje için{" "}
-            <Link href="/github" className="text-gray-900 underline hover:text-gray-700 transition-colors">
-              GitHub profilimi
-            </Link>{" "}
-            ziyaret edebilirsiniz.
-          </p>
-        </motion.div>
       </div>
     </section>
   );
