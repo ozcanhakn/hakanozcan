@@ -44,7 +44,25 @@ function Word({ children, position, color }: { children: string; position: [numb
   useFrame(({ camera }) => {
     if (ref.current) {
       ref.current.quaternion.copy(camera.quaternion);
-      ref.current.material.color.lerp(new THREE.Color(hovered ? "#ffffff" : color), 0.1);
+      
+      // Malzeme tipini kontrol edip uygun şekilde erişim
+      const material = ref.current.material;
+      const targetColor = new THREE.Color(hovered ? "#ffffff" : color);
+      
+      // Materyali doğru şekilde işle
+      if (Array.isArray(material)) {
+        // Dizi içindeki tüm materyalleri işle
+        material.forEach(mat => {
+          if (mat && (mat as THREE.MeshStandardMaterial).color) {
+            (mat as THREE.MeshStandardMaterial).color.lerp(targetColor, 0.1);
+          }
+        });
+      } else {
+        // Tek bir materyali işle
+        if (material && (material as THREE.MeshStandardMaterial).color) {
+          (material as THREE.MeshStandardMaterial).color.lerp(targetColor, 0.1);
+        }
+      }
     }
   });
 
@@ -66,14 +84,15 @@ function Word({ children, position, color }: { children: string; position: [numb
   );
 }
 
-function Cloud({ count = 4, radius = 20 }) {
-  // Create a spherical distribution of words
-  const words = useMemo(() => {
+function Cloud({ radius = 20 }) {
+  // Create a spherical distribution of words using skills array directly
+  const wordsWithPositions = useMemo(() => {
     const temp = [];
     const phiSpan = Math.PI * (3 - Math.sqrt(5)); // Golden angle
+    const skillCount = skills.length;
 
-    for (let i = 0; i < skills.length; i++) {
-      const y = 1 - (i / (skills.length - 1)) * 2; // y goes from 1 to -1
+    for (let i = 0; i < skillCount; i++) {
+      const y = 1 - (i / (skillCount - 1)) * 2; // y goes from 1 to -1
       const radiusAtY = Math.sqrt(1 - y * y); // radius at y
 
       const theta = phiSpan * i; // golden angle increment
@@ -81,18 +100,32 @@ function Cloud({ count = 4, radius = 20 }) {
       const x = Math.cos(theta) * radiusAtY;
       const z = Math.sin(theta) * radiusAtY;
 
-      temp.push([x * radius, y * radius, z * radius]);
+      temp.push({
+        position: [x * radius, y * radius, z * radius] as [number, number, number],
+        skill: skills[i]
+      });
     }
     return temp;
   }, [radius]);
 
   return (
     <>
-      {words.map((pos, i) => (
-        <Word key={i} position={pos as [number, number, number]} color={skills[i].color}>
-          {skills[i].name}
-        </Word>
-      ))}
+      {wordsWithPositions.map((item, i) => {
+        // item.skill'in tanımlı olduğundan emin olalım
+        if (!item.skill) {
+          return null;
+        }
+        
+        return (
+          <Word 
+            key={i} 
+            position={item.position} 
+            color={item.skill.color}
+          >
+            {item.skill.name}
+          </Word>
+        );
+      })}
     </>
   );
 }
@@ -108,7 +141,7 @@ export default function AboutSection() {
           <fog attach="fog" args={['#000000', 20, 60]} />
           <ambientLight intensity={2} />
           <pointLight position={[10, 10, 10]} intensity={2} />
-          <Cloud count={8} radius={18} />
+          <Cloud radius={18} />
           <OrbitControls autoRotate autoRotateSpeed={0.5} enableZoom={false} />
           <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
         </Canvas>
