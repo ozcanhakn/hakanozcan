@@ -74,7 +74,7 @@ const projects: Project[] = [
     slug: "intria",
     description:
       "Gerçek zamanlı makroekonomik verileri, piyasa göstergelerini ve yapay zekâ yorumlarını tek bir analiz panelinde birleştiren gelişmiş karar destek platformu.",
-    image: "/intriaphoto.png",
+    image: "/intria1.PNG",
     tech:
       "Next.js 15 • TypeScript • Tailwind • shadcn/ui • Convex • TurboRepo • OpenAI API • SWR • Finance APIs • Vercel",
     githubUrl: "https://github.com/ozcanhakn/intria",
@@ -218,8 +218,8 @@ export default function Projects() {
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
               className={`px-8 py-3 rounded-full text-sm font-bold tracking-wide transition-all duration-300 border ${selectedCategory === category.id
-                  ? "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-                  : "bg-transparent text-gray-500 border-white/10 hover:border-white/30 hover:text-white"
+                ? "bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                : "bg-transparent text-gray-500 border-white/10 hover:border-white/30 hover:text-white"
                 }`}
             >
               {category.label.toUpperCase()}

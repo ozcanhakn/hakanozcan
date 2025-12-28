@@ -126,3 +126,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hero Section - Avatar gradient border slow spin animation */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}

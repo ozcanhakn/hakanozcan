@@ -37,18 +37,18 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto flex items-center justify-between h-20 px-6">
         {/* Logo */}
         <Link href="/" className="group flex items-center gap-3 z-10">
-          <div className="relative w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl border border-white/10 group-hover:border-white/30 group-hover:bg-white/10 transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0.5)] group-hover:shadow-[0_0_25px_rgba(255,255,255,0.1)]">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white group-hover:text-blue-400 transition-colors duration-300">
+          <div className="relative w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl border border-white/10 group-hover:border-orange-500/50 group-hover:bg-orange-500/10 transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0.5)] group-hover:shadow-[0_0_25px_rgba(249,115,22,0.2)]">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white group-hover:text-orange-400 transition-colors duration-300">
               <path d="M4 4V20M20 4V20M4 12H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <circle cx="4" cy="4" r="2" fill="currentColor" className="animate-pulse" />
               <circle cx="20" cy="20" r="2" fill="currentColor" className="animate-pulse" />
             </svg>
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-bold tracking-[0.2em] text-white group-hover:text-blue-400 transition-colors duration-300">
-              HAKAN
+            <span className="text-sm font-bold tracking-[0.2em] text-white group-hover:text-orange-400 transition-colors duration-300">
+              M. HAKAN
             </span>
-            <span className="text-[10px] font-medium tracking-[0.3em] text-gray-500 group-hover:text-gray-300 transition-colors duration-300">
+            <span className="text-[10px] font-medium tracking-[0.3em] text-gray-500 group-hover:text-orange-300 transition-colors duration-300">
               ÖZCAN
             </span>
           </div>
@@ -107,13 +107,13 @@ function MagneticLink({ children, href, isActive }: { children: React.ReactNode;
       <Link
         ref={ref}
         href={href}
-        className={`relative px-5 py-2.5 rounded-full text-sm font-medium transition-colors duration-300 block ${isActive ? "text-black" : "text-gray-400 hover:text-white"
+        className={`relative px-5 py-2.5 rounded-full text-sm font-medium transition-colors duration-300 block ${isActive ? "text-white" : "text-gray-400 hover:text-orange-400"
           }`}
       >
         {isActive && (
           <motion.div
             layoutId="active-pill"
-            className="absolute inset-0 bg-white rounded-full -z-10"
+            className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full -z-10"
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           />
         )}
