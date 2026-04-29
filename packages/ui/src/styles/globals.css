@@ -78,6 +78,18 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+@font-face {
+  font-family: 'Archia';
+  src: url('/fonts/archia-regular-webfont.woff');
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: 'Montreal';
+  src: url('/fonts/PPNeueMontreal-Light.woff');
+  font-weight: 200;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -1,276 +1,125 @@
 "use client";
 
-import { Float, MeshDistortMaterial, PointMaterial, Points, Sphere } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
-import * as THREE from "three";
+import { useState } from "react";
 
 // Proje verileri
 const projects = [
   {
-    title: "Assistyl",
-    description: "AI-Powered B2B Support Assistant - Yapay zeka destekli müşteri hizmetleri platformu. Otomatik ticket yönetimi, akıllı öneri sistemi ve gerçek zamanlı analitik.",
-    image: "/assistlydemo.png",
-    tags: ["React", "Node.js", "Sentry", "Clerk", "Convex", "AWS", "Turbo"],
-    gradient: "from-cyan-500 to-blue-500",
-    color: "#22d3ee",
-    link: "#"
+    title: "THE ARCHITECT (INTRIA)",
+    type: "GRAPH-BASED INTELLIGENCE",
+    status: "DEPLOYED",
+    description: "S&P 500 şirketleri için global olaylardan (jeopolitik, makro, lojistik) finansal sinyal üreten, Neo4j ve WebGL destekli graf tabanlı istihbarat ve etki analiz sistemi.",
+    image: "/intria1.PNG",
+    tags: ["ONTOLOGY", "KNOWLEDGE GRAPH", "FINANCIAL INTELLIGENCE"],
+    link: "https://intria.app"
   },
   {
-    title: "Intria",
-    description: "AI-Powered Risk Intelligence Platform - Yapay zeka ile portföy risk analizi, gerçek zamanlı piyasa takibi ve akıllı yatırım önerileri.",
-    image: "/intria1.PNG",
-    tags: ["Next.js 15", "TypeScript", "Convex", "OpenAI", "Redis", "TurboRepo"],
-    gradient: "from-orange-500 to-amber-500",
-    color: "#f97316",
-    link: "https://intria-web.vercel.app/"
+    title: "SERAPH MESSAGING",
+    type: "ANTI-FORENSICS COMM PROTOCOL",
+    status: "OPERATIONAL",
+    description: "Devlet destekli siber tehditlere (NSO/Pegasus) karşı tasarlanmış; Double Ratchet E2EE, Memory Hardening, Metadata Minimization ve Cryptographic Erase (Duress PIN) yeteneklerine sahip askeri düzey iletişim mimarisi.",
+    image: "/SeraphMessagingLogo.png",
+    tags: ["DOUBLE RATCHET", "SQLCIPHER", "HKDF", "ANTI-FORENSICS", "E2EE"],
+    link: "https://github.com/ozcanhakn/Seraph-Messaging"
   }
 ];
 
-// Portal Parçacıkları
-function PortalParticles({ color }: { color: string }) {
-  const ref = useRef<THREE.Points>(null);
-  const count = 200; // Optimized from 500
-
-  const positions = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI * 2;
-      const radius = 1.5 + Math.random() * 0.5;
-      pos[i * 3] = Math.cos(angle) * radius;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 0.2;
-      pos[i * 3 + 2] = Math.sin(angle) * radius;
-    }
-    return pos;
-  }, []);
-
-  useFrame((state, delta) => {
-    if (ref.current) {
-      ref.current.rotation.z += delta * 0.5;
-    }
-  });
-
-  return (
-    <Points ref={ref} positions={positions} stride={3}>
-      <PointMaterial
-        transparent
-        color={color}
-        size={0.02}
-        sizeAttenuation
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </Points>
-  );
-}
-
-// Hologram Ring
-function HologramRing({ color, radius, speed }: { color: string; radius: number; speed: number }) {
-  const ringRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    if (ringRef.current) {
-      ringRef.current.rotation.z = state.clock.elapsedTime * speed;
-    }
-  });
-
-  return (
-    <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
-      <torusGeometry args={[radius, 0.02, 16, 100]} />
-      <meshStandardMaterial
-        color={color}
-        emissive={color}
-        emissiveIntensity={2}
-        transparent
-        opacity={0.6}
-      />
-    </mesh>
-  );
-}
-
-// Portal Merkez Küresi
-function PortalCore({ color }: { color: string }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.3;
-      meshRef.current.rotation.x = state.clock.elapsedTime * 0.2;
-    }
-  });
-
-  return (
-    <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-      <Sphere ref={meshRef} args={[0.8, 32, 32]}>
-        <MeshDistortMaterial
-          color="#0a0a0a"
-          emissive={color}
-          emissiveIntensity={0.3}
-          roughness={0.2}
-          metalness={0.8}
-          distort={0.2}
-          speed={2}
-        />
-      </Sphere>
-    </Float>
-  );
-}
-
-// Portal 3D Sahne
-function PortalScene({ color }: { color: string }) {
-  return (
-    <>
-      <ambientLight intensity={0.2} />
-      <pointLight position={[5, 5, 5]} intensity={1} color={color} />
-      <pointLight position={[-5, -5, -5]} intensity={0.5} color={color} />
-
-      <PortalCore color={color} />
-      <PortalParticles color={color} />
-      <HologramRing color={color} radius={1.2} speed={0.5} />
-      <HologramRing color={color} radius={1.4} speed={-0.3} />
-      <HologramRing color={color} radius={1.6} speed={0.2} />
-
-      <EffectComposer>
-        <Bloom luminanceThreshold={0.4} luminanceSmoothing={0.9} intensity={0.8} />
-        <Vignette eskil={false} offset={0.1} darkness={0.4} />
-      </EffectComposer>
-    </>
-  );
-}
-
-// 3D Tilt Hook
-function use3DTilt() {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
-  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
-
-  return { x, y, rotateX, rotateY };
-}
-
-// Proje Kartı
+// Palantir-Style Data Row (Card)
 function ProjectCard({ project, index }: { project: typeof projects[0]; index: number }) {
-  const ref = useRef<HTMLDivElement>(null);
   const isEven = index % 2 === 0;
-  const tilt = use3DTilt();
   const [isHovered, setIsHovered] = useState(false);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const xPct = (e.clientX - rect.left) / rect.width - 0.5;
-    const yPct = (e.clientY - rect.top) / rect.height - 0.5;
-    tilt.x.set(xPct);
-    tilt.y.set(yPct);
-  };
-
-  const handleMouseLeave = () => {
-    tilt.x.set(0);
-    tilt.y.set(0);
-    setIsHovered(false);
-  };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 100 }}
+      initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 0.8 }}
-      className={`flex flex-col ${isEven ? "lg:flex-row" : "lg:flex-row-reverse"} items-center gap-16`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`flex flex-col ${isEven ? "lg:flex-row" : "lg:flex-row-reverse"} items-stretch border border-white/10 bg-black group transition-colors duration-500 hover:border-white/30 relative overflow-hidden`}
     >
-      {/* 3D Hologram Portal Card */}
-      <motion.div
-        ref={ref}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        onMouseEnter={() => setIsHovered(true)}
-        style={{
-          rotateX: tilt.rotateX,
-          rotateY: tilt.rotateY,
-          transformStyle: "preserve-3d"
-        }}
-        className="w-full lg:w-3/5 relative aspect-video rounded-3xl cursor-pointer group perspective-1000"
-      >
-        {/* Portal Background */}
-        <div className="absolute inset-0 rounded-3xl overflow-hidden">
-          <Canvas camera={{ position: [0, 0, 4], fov: 50 }}>
-            <PortalScene color={project.color} />
-          </Canvas>
+      {/* Background Grid Pattern on hover */}
+      <div className={`absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:32px_32px] transition-opacity duration-700 ${isHovered ? 'opacity-100' : 'opacity-0'} pointer-events-none`} />
+
+      {/* Image Data View */}
+      <div className="w-full lg:w-1/2 relative min-h-[300px] lg:min-h-[400px] border-b lg:border-b-0 lg:border-r border-white/10 overflow-hidden bg-black/50">
+        <Image
+          src={project.image}
+          alt={project.title}
+          fill
+          className="object-cover object-top opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-80 transition-all duration-700 scale-100 group-hover:scale-105"
+        />
+        {/* Radar Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.8)_100%)] pointer-events-none" />
+        <div className={`absolute top-0 left-0 w-full h-[1px] bg-white/30 transition-transform duration-1000 ${isHovered ? 'translate-y-[400px]' : 'translate-y-0'} pointer-events-none`} />
+        
+        {/* HUD Elements */}
+        <div className="absolute top-4 left-4 flex gap-2">
+          <div className="w-2 h-2 bg-white animate-pulse" />
+          <span className="text-[10px] font-mono tracking-widest text-white uppercase">{project.title}_SYS</span>
+        </div>
+      </div>
+
+      {/* Telemetry / Content View */}
+      <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-between relative z-10 bg-black/80 backdrop-blur-sm">
+        
+        {/* Meta Header */}
+        <div className="flex justify-between items-start mb-8 border-b border-white/10 pb-4">
+          <div>
+            <h3 className="text-3xl lg:text-4xl font-light tracking-[0.1em] text-white uppercase mb-2">
+              {project.title}
+            </h3>
+            <span className="text-[10px] text-neutral-500 font-mono tracking-[0.3em] uppercase">
+              TYPE: {project.type}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 border border-white/20 px-3 py-1 bg-white/5">
+            <div className="w-1.5 h-1.5 rounded-full bg-neutral-300 animate-pulse" />
+            <span className="text-[10px] font-mono tracking-widest text-neutral-300">
+              {project.status}
+            </span>
+          </div>
         </div>
 
-        {/* Glassmorphism Frame */}
-        <div className="absolute inset-0 rounded-3xl border border-slate-700/50 bg-black/30 backdrop-blur-sm" />
-
-        {/* Project Image */}
-        <div
-          style={{ transform: "translateZ(30px)" }}
-          className="absolute inset-6 rounded-2xl overflow-hidden shadow-2xl border border-slate-800"
-        >
-          <Image
-            src={project.image}
-            alt={project.title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-700"
-          />
-          {/* Image Overlay */}
-          <div className={`absolute inset-0 bg-gradient-to-t ${project.gradient} opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />
-        </div>
-
-        {/* Floating Project Title */}
-        <motion.div
-          style={{ transform: "translateZ(50px)" }}
-          className={`absolute -bottom-4 ${isEven ? "-right-4" : "-left-4"} px-6 py-3 rounded-2xl bg-gradient-to-r ${project.gradient} text-white font-bold text-lg shadow-xl`}
-        >
-          {project.title}
-        </motion.div>
-
-        {/* Glow Effect */}
-        <div className={`absolute inset-0 bg-gradient-to-br ${project.gradient} opacity-0 group-hover:opacity-10 blur-3xl transition-opacity duration-500 -z-10 scale-150`} />
-      </motion.div>
-
-      {/* Content */}
-      <div className="w-full lg:w-2/5 space-y-8">
-        <div>
-          <h3 className={`text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${project.gradient} mb-4`}>
-            {project.title}
-          </h3>
-          <p className="text-xl text-gray-400 leading-relaxed">
+        {/* Description */}
+        <div className="mb-10">
+          <p className="text-sm lg:text-base text-neutral-400 font-light leading-relaxed max-w-lg">
             {project.description}
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          {project.tags.map((tag: string, i: number) => (
-            <span
-              key={i}
-              className="px-4 py-2 rounded-full text-sm font-medium bg-white/5 text-gray-300 border border-slate-800 hover:bg-orange-500/10 hover:border-orange-500/30 hover:text-orange-300 transition-colors"
-            >
-              {tag}
-            </span>
-          ))}
+        {/* Tech Stack Array */}
+        <div className="mb-10">
+          <span className="text-[10px] text-neutral-600 font-mono tracking-[0.2em] uppercase block mb-3">
+            // INTEGRATED_MODULES
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {project.tags.map((tag: string, i: number) => (
+              <span
+                key={i}
+                className="px-2 py-1 text-[10px] font-mono tracking-widest bg-white/[0.03] text-neutral-400 border border-white/10 transition-colors group-hover:border-white/30 group-hover:text-white"
+              >
+                [{tag}]
+              </span>
+            ))}
+          </div>
         </div>
 
-        <Link href={project.link}>
-          <button className={`group relative px-8 py-4 rounded-full bg-gradient-to-r ${project.gradient} text-white font-bold text-lg overflow-hidden hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] transition-all duration-300`}>
-            <span className="relative z-10 flex items-center gap-2">
-              Projeyi İncele
-              <motion.span
-                animate={{ x: [0, 4, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                →
-              </motion.span>
-            </span>
-          </button>
-        </Link>
+        {/* CTA */}
+        <div>
+          <Link href={project.link} target="_blank" rel="noopener noreferrer">
+            <button className="relative w-full sm:w-auto px-8 py-3 bg-white/5 border border-white/20 text-white text-xs font-mono tracking-[0.3em] uppercase hover:bg-white hover:text-black transition-all duration-300 group/btn overflow-hidden">
+              <span className="relative z-10 flex items-center justify-center gap-4">
+                INITIATE PROTOCOL
+                <span className="group-hover/btn:translate-x-2 transition-transform duration-300">→</span>
+              </span>
+            </button>
+          </Link>
+        </div>
       </div>
     </motion.div>
   );
@@ -278,27 +127,28 @@ function ProjectCard({ project, index }: { project: typeof projects[0]; index: n
 
 export default function Projects() {
   return (
-    <section className="relative w-full py-40 px-6 bg-black overflow-hidden">
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.1),transparent_50%)]" />
-
-      <div className="max-w-7xl mx-auto relative z-10">
+    <section className="relative w-full py-40 bg-black border-t border-white/10">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-32"
+          className="mb-20 flex flex-col items-center md:items-start"
         >
-          <h2 className="text-7xl md:text-9xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-orange-500 via-amber-400 to-orange-500/10 tracking-tighter">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-8 h-[1px] bg-white/50" />
+            <h2 className="text-xs font-mono text-neutral-400 tracking-[0.4em] uppercase">
+              DEPLOYED SYSTEMS
+            </h2>
+          </div>
+          <h3 className="text-5xl md:text-7xl font-light text-white tracking-[0.1em] uppercase">
             PROJELER
-          </h2>
-          <p className="text-xl text-gray-500 mt-6 max-w-2xl mx-auto">
-            Yapay zeka, SaaS ve enterprise çözümlerden oluşan proje portföyüm
-          </p>
+          </h3>
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-40">
+        <div className="flex flex-col gap-12">
           {projects.map((project, index) => (
             <ProjectCard key={index} project={project} index={index} />
           ))}

@@ -1,124 +1,152 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
+
+const navLinks = [
+  { name: "HAKKIMDA", path: "/" },
+  { name: "PROJELER", path: "/projects" },
+];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      setScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: "Hakkımda", path: "/" },
-    { name: "Projeler", path: "/projects" },
-    { name: "Blog", path: "/blog" },
-    { name: "İletişim", path: "/contact" },
-  ];
+  // Mobil menü açıkken arkadaki body'nin scroll olmasını engelle
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+  }, [mobileMenuOpen]);
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${scrolled
-        ? "bg-black/50 backdrop-blur-xl border-b border-white/5 shadow-[0_0_30px_rgba(0,0,0,0.5)]"
-        : "bg-transparent backdrop-blur-none"
+    <>
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className={`fixed top-0 left-0 w-full z-[100] transition-colors duration-500 border-b ${
+          scrolled || mobileMenuOpen
+            ? "bg-black/80 backdrop-blur-md border-white/10"
+            : "bg-transparent border-transparent"
         }`}
-    >
-      <div className="max-w-7xl mx-auto flex items-center justify-between h-20 px-6">
-        {/* Logo */}
-        <Link href="/" className="group flex items-center gap-3 z-10">
-          <div className="relative w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl border border-white/10 group-hover:border-orange-500/50 group-hover:bg-orange-500/10 transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0.5)] group-hover:shadow-[0_0_25px_rgba(249,115,22,0.2)]">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white group-hover:text-orange-400 transition-colors duration-300">
-              <path d="M4 4V20M20 4V20M4 12H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="4" cy="4" r="2" fill="currentColor" className="animate-pulse" />
-              <circle cx="20" cy="20" r="2" fill="currentColor" className="animate-pulse" />
-            </svg>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-bold tracking-[0.2em] text-white group-hover:text-orange-400 transition-colors duration-300">
-              M. HAKAN
-            </span>
-            <span className="text-[10px] font-medium tracking-[0.3em] text-gray-500 group-hover:text-orange-300 transition-colors duration-300">
-              ÖZCAN
-            </span>
-          </div>
-        </Link>
-
-        {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-2 bg-white/5 backdrop-blur-md px-2 py-1.5 rounded-full border border-white/10">
-          {navLinks.map((link) => (
-            <MagneticLink
-              key={link.path}
-              href={link.path}
-              isActive={pathname === link.path}
-            >
-              {link.name}
-            </MagneticLink>
-          ))}
-        </div>
-
-        {/* Mobile Menu Button (Placeholder for now) */}
-        <div className="md:hidden">
-          <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
-            <div className="w-4 h-4 bg-white rounded-sm" />
-          </div>
-        </div>
-      </div>
-    </motion.nav>
-  );
-}
-
-function MagneticLink({ children, href, isActive }: { children: React.ReactNode; href: string; isActive: boolean }) {
-  const ref = useRef<HTMLAnchorElement>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-
-  const handleMouse = (e: React.MouseEvent) => {
-    const { clientX, clientY } = e;
-    const { height, width, left, top } = ref.current!.getBoundingClientRect();
-    const middleX = clientX - (left + width / 2);
-    const middleY = clientY - (top + height / 2);
-    setPosition({ x: middleX, y: middleY });
-  };
-
-  const reset = () => {
-    setPosition({ x: 0, y: 0 });
-  };
-
-  const { x, y } = position;
-
-  return (
-    <motion.div
-      style={{ position: "relative" }}
-      animate={{ x, y }}
-      transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
-      onMouseMove={handleMouse}
-      onMouseLeave={reset}
-    >
-      <Link
-        ref={ref}
-        href={href}
-        className={`relative px-5 py-2.5 rounded-full text-sm font-medium transition-colors duration-300 block ${isActive ? "text-white" : "text-gray-400 hover:text-orange-400"
-          }`}
       >
-        {isActive && (
+        <div className="max-w-7xl mx-auto flex items-center justify-between h-20 px-6 lg:px-8">
+          
+          {/* LOGO */}
+          <Link href="/" className="group flex flex-col z-10" onClick={() => setMobileMenuOpen(false)}>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-white rounded-sm group-hover:scale-150 transition-transform duration-500" />
+              <span className="text-sm font-semibold tracking-[0.25em] text-white transition-opacity duration-300">
+                M. HAKAN ÖZCAN
+              </span>
+            </div>
+          </Link>
+
+          {/* DESKTOP MENU */}
+          <div className="hidden md:flex items-center gap-10">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  href={link.path}
+                  className="relative group text-xs font-medium tracking-[0.2em] text-neutral-400 hover:text-white transition-colors duration-300 py-2"
+                >
+                  {link.name}
+                  {isActive && (
+                    <motion.div
+                      layoutId="navbar-indicator"
+                      className="absolute bottom-0 left-0 right-0 h-[1px] bg-white"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  {/* Hover effect line */}
+                  <div className={`absolute bottom-0 left-0 right-0 h-[1px] bg-white/50 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left ${isActive ? 'hidden' : 'block'}`} />
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* CTA BUTTON (Desktop) */}
+          <div className="hidden md:flex items-center">
+            <Link
+              href="/contact"
+              className="text-xs font-semibold tracking-[0.2em] text-white border border-white/20 px-6 py-2.5 hover:bg-white hover:text-black transition-all duration-500"
+            >
+              İLETİŞİM
+            </Link>
+          </div>
+
+          {/* MOBILE MENU TOGGLE */}
+          <button
+            className="md:hidden z-10 text-white p-2 focus:outline-none"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle Menu"
+          >
+            {mobileMenuOpen ? <X size={24} strokeWidth={1.5} /> : <Menu size={24} strokeWidth={1.5} />}
+          </button>
+        </div>
+      </motion.nav>
+
+      {/* MOBILE FULL-SCREEN MENU */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
           <motion.div
-            layoutId="active-pill"
-            className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full -z-10"
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          />
+            initial={{ opacity: 0, y: "-100%" }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: "-100%" }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col justify-center items-center px-6"
+          >
+            <div className="flex flex-col items-center gap-8 w-full max-w-md">
+              {[...navLinks, { name: "İLETİŞİM", path: "/contact" }].map((link, i) => (
+                <motion.div
+                  key={link.path}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 + i * 0.1 }}
+                  className="w-full text-center overflow-hidden"
+                >
+                  <Link
+                    href={link.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="relative inline-block text-2xl font-light tracking-[0.2em] text-neutral-300 hover:text-white transition-colors duration-300 py-2 group"
+                  >
+                    {link.name}
+                    <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center" />
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="absolute bottom-12 text-center"
+            >
+              <div className="text-[10px] font-mono tracking-[0.3em] text-neutral-600">
+                SYSTEM.ONLINE // MHO.INC
+              </div>
+            </motion.div>
+          </motion.div>
         )}
-        {children}
-      </Link>
-    </motion.div>
+      </AnimatePresence>
+    </>
   );
 }
