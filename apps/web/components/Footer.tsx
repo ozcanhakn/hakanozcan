@@ -20,14 +20,14 @@ export default function Footer() {
                 {/* Upper CTA Placeholder */}
                 <div className="w-full max-w-4xl mx-auto text-center mb-20 md:mb-32 mt-32">
                     <h2 className="text-4xl md:text-7xl font-medium text-white mb-6 tracking-tight">
-                        Ready to explore the unknown?
+                        Bilinmeyeni keşfetmeye hazır mısınız?
                     </h2>
                     <p className="text-white/50 text-lg md:text-xl max-w-2xl mx-auto mb-10">
-                        Join our collective of visionaries and pioneers shaping the future of global intelligence and cosmic exploration.
+                        Benimle ilgili kanallardan iletişime geçebilirsiniz
                     </p>
-                    <button className="px-8 py-4 bg-white text-black rounded-full font-medium hover:bg-white/90 transition-colors">
-                        Start the Journey
-                    </button>
+                    <Link href="/contact" className="px-8 py-4 bg-white text-black rounded-full font-medium hover:bg-white/90 transition-colors inline-block">
+                        Yolculuğa Başlayın
+                    </Link>
                 </div>
 
                 <motion.footer
