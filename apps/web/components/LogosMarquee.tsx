@@ -8,6 +8,8 @@ const companies = [
   "TIDIO",
   "TIBC",
   "GANJA STATE UNIVERSITY",
+  "HuququmVar",
+  "Anilarinİzi",
 ];
 
 export default function LogosMarquee() {
@@ -18,7 +20,7 @@ export default function LogosMarquee() {
       
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 mb-6 flex items-center gap-4">
          <div className="w-2 h-2 bg-white animate-pulse" />
-         <span className="text-[10px] font-mono text-neutral-500 tracking-[0.4em] uppercase">SYSTEM.TRUSTED_BY</span>
+         <span className="text-[10px] font-mono text-neutral-500 tracking-[0.4em] uppercase">STRATEGIC.DEPLOYMENTS</span>
          <div className="flex-1 h-[1px] bg-[linear-gradient(to_right,rgba(255,255,255,0.1),transparent)]" />
       </div>
 
