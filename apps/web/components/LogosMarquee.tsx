@@ -10,6 +10,7 @@ const companies = [
   "GANJA STATE UNIVERSITY",
   "HuququmVar",
   "Anilarinİzi",
+  "ACQIB",
 ];
 
 export default function LogosMarquee() {
