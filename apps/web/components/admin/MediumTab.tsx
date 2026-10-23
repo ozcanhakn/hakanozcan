@@ -6,6 +6,8 @@ import { primaryButton, type Status } from "@/components/admin/ui";
 import type { MediumPost } from "@/lib/medium";
 import type { SiteSettings } from "@/lib/settings";
 
+type MediumItem = MediumPost & { onSite: "published" | "draft" | null };
+
 interface Props {
   settings: SiteSettings;
   onSave: (next: SiteSettings) => Promise<string | null>;
@@ -13,7 +15,7 @@ interface Props {
 }
 
 export default function MediumTab({ settings, onSave, onUnauthorized }: Props) {
-  const [posts, setPosts] = useState<MediumPost[] | null>(null);
+  const [posts, setPosts] = useState<MediumItem[] | null>(null);
   const [hidden, setHidden] = useState<Set<string>>(new Set(settings.hiddenMedium));
   const [status, setStatus] = useState<Status>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -22,7 +24,7 @@ export default function MediumTab({ settings, onSave, onUnauthorized }: Props) {
     void (async () => {
       const res = await fetch("/api/admin/medium");
       if (res.status === 401) return onUnauthorized();
-      const data = (await res.json().catch(() => null)) as { posts?: MediumPost[] } | null;
+      const data = (await res.json().catch(() => null)) as { posts?: MediumItem[] } | null;
       setPosts(data?.posts ?? []);
     })();
   }, [onUnauthorized]);
@@ -46,7 +48,8 @@ export default function MediumTab({ settings, onSave, onUnauthorized }: Props) {
     <div className="max-w-3xl">
       <p className="text-[15px] leading-relaxed text-stone mb-8">
         These articles come from your Medium profile automatically. Untick any you do not want listed on the Writing page.
-        A Medium article that is also saved as an on-site post is shown once, as the on-site post.
+        If the same article is also saved as a post on this site, visitors see the on-site post instead, so to hide it
+        completely use the Posts tab.
       </p>
 
       {posts === null ? (
@@ -67,8 +70,18 @@ export default function MediumTab({ settings, onSave, onUnauthorized }: Props) {
                 <span>
                   <span className="block font-display text-xl leading-snug text-ink">{post.title}</span>
                   <span className="block text-xs text-stone mt-1">
-                    {new Date(post.date).toLocaleDateString("en-GB")} · {hidden.has(post.href) ? "Hidden" : "Shown"}
+                    {new Date(post.date).toLocaleDateString("en-GB")} ·{" "}
+                    {post.onSite === "published"
+                      ? "Visitors see the on-site post instead (manage it in Posts)"
+                      : hidden.has(post.href)
+                        ? "Hidden"
+                        : "Shown"}
                   </span>
+                  {post.onSite === "draft" && (
+                    <span className="block text-xs text-brass mt-1">
+                      The on-site copy is a draft, so this Medium copy shows unless you untick it.
+                    </span>
+                  )}
                 </span>
               </label>
             </li>

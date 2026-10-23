@@ -62,6 +62,11 @@ export async function getPost(slug: string): Promise<Post | null> {
   }
 }
 
+/** Titles are compared without case, spaces or punctuation, to spot the same article on Medium and on the site. */
+export function normalizeTitle(title: string): string {
+  return title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+}
+
 export function estimateReadTime(content: string): string {
   const words = content.trim().split(/\s+/).filter(Boolean).length;
   return `${Math.max(1, Math.ceil(words / 200))} min read`;

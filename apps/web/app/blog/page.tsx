@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { siteConfig } from "@/content/site";
-import { formatDate, getPosts } from "@/lib/blog";
+import { formatDate, getPosts, normalizeTitle } from "@/lib/blog";
 import { getMediumPosts } from "@/lib/medium";
 import { getSiteSettings } from "@/lib/settings";
 
@@ -20,15 +20,13 @@ interface Entry {
   source: string;
 }
 
-const normalize = (title: string) => title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
-
 export default async function BlogPage() {
   const [mediumAll, notes, settings] = await Promise.all([getMediumPosts(), getPosts(), getSiteSettings()]);
 
   // A post that exists both on the site and on Medium is listed once, as the on-site version.
-  const onSite = new Set(notes.map((post) => normalize(post.title)));
+  const onSite = new Set(notes.map((post) => normalizeTitle(post.title)));
   const hidden = new Set(settings.hiddenMedium);
-  const medium = mediumAll.filter((post) => !onSite.has(normalize(post.title)) && !hidden.has(post.href));
+  const medium = mediumAll.filter((post) => !onSite.has(normalizeTitle(post.title)) && !hidden.has(post.href));
 
   const entries: Entry[] = [
     ...notes.map((post) => ({
