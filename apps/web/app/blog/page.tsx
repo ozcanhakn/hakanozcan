@@ -23,13 +23,20 @@ interface Entry {
 export default async function BlogPage() {
   const [mediumAll, notes, settings] = await Promise.all([getMediumPosts(), getPosts(), getSiteSettings()]);
 
-  // A post that exists both on the site and on Medium is listed once, as the on-site version.
+  // Hiding a Medium article in the admin panel hides that article from this list entirely,
+  // including a copy of it saved as a post on this site (matched by title).
+  const hiddenHrefs = new Set(settings.hiddenMedium);
+  const hiddenTitles = new Set(
+    mediumAll.filter((post) => hiddenHrefs.has(post.href)).map((post) => normalizeTitle(post.title))
+  );
+
+  // An article that exists both on the site and on Medium is listed once, as the on-site version.
   const onSite = new Set(notes.map((post) => normalizeTitle(post.title)));
-  const hidden = new Set(settings.hiddenMedium);
-  const medium = mediumAll.filter((post) => !onSite.has(normalizeTitle(post.title)) && !hidden.has(post.href));
+  const visibleNotes = notes.filter((post) => !hiddenTitles.has(normalizeTitle(post.title)));
+  const medium = mediumAll.filter((post) => !onSite.has(normalizeTitle(post.title)) && !hiddenHrefs.has(post.href));
 
   const entries: Entry[] = [
-    ...notes.map((post) => ({
+    ...visibleNotes.map((post) => ({
       key: `note-${post.id}`,
       title: post.title,
       summary: post.summary,

@@ -48,8 +48,8 @@ export default function MediumTab({ settings, onSave, onUnauthorized }: Props) {
     <div className="max-w-3xl">
       <p className="text-[15px] leading-relaxed text-stone mb-8">
         These articles come from your Medium profile automatically. Untick any you do not want listed on the Writing page.
-        If the same article is also saved as a post on this site, visitors see the on-site post instead, so to hide it
-        completely use the Posts tab.
+        If the same article is also saved as a post on this site, it is listed once, and unticking it here hides it from
+        the list. The post page itself stays reachable by its direct link; to remove it completely, use the Posts tab.
       </p>
 
       {posts === null ? (
@@ -71,15 +71,12 @@ export default function MediumTab({ settings, onSave, onUnauthorized }: Props) {
                   <span className="block font-display text-xl leading-snug text-ink">{post.title}</span>
                   <span className="block text-xs text-stone mt-1">
                     {new Date(post.date).toLocaleDateString("en-GB")} ·{" "}
-                    {post.onSite === "published"
-                      ? "Visitors see the on-site post instead (manage it in Posts)"
-                      : hidden.has(post.href)
-                        ? "Hidden"
-                        : "Shown"}
+                    {hidden.has(post.href) ? "Hidden" : "Shown"}
                   </span>
-                  {post.onSite === "draft" && (
+                  {post.onSite && (
                     <span className="block text-xs text-brass mt-1">
-                      The on-site copy is a draft, so this Medium copy shows unless you untick it.
+                      Also saved as a post on this site ({post.onSite === "draft" ? "draft" : "published"}).
+                      Unticking this hides the article from the Writing list, including that copy.
                     </span>
                   )}
                 </span>
