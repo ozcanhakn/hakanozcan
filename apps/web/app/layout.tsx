@@ -24,7 +24,6 @@ const fontMono = Geist_Mono({
 const fontDisplay = Source_Serif_4({
   subsets: ["latin", "latin-ext"],
   weight: ["600", "700"],
-  style: ["normal", "italic"],
   variable: "--font-display-face",
 })
 
