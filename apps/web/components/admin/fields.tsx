@@ -131,6 +131,47 @@ export function ImageField({ label, value, onChange }: { label: string; value: s
   );
 }
 
+/** A list of pictures or videos, each with its own upload field, that can grow up to `max` items. */
+export function MediaListField({
+  label,
+  value,
+  onChange,
+  max = 10,
+}: {
+  label: string;
+  value: string[];
+  onChange: (value: string[]) => void;
+  max?: number;
+}) {
+  return (
+    <div className="space-y-5">
+      {value.map((src, index) => (
+        <div key={index} className="border-l-2 border-line pl-4">
+          <ImageField
+            label={`${label} ${index + 1}`}
+            value={src}
+            onChange={(next) => onChange(value.map((item, i) => (i === index ? next : item)))}
+          />
+          <div className="mt-2 flex items-center gap-4 text-xs">
+            <MoveButtons index={index} length={value.length} onMove={(from, to) => onChange(moveItem(value, from, to))} />
+            <button type="button" onClick={() => onChange(value.filter((_, i) => i !== index))} className="text-red-800 underline underline-offset-4">
+              Remove
+            </button>
+          </div>
+        </div>
+      ))}
+      {value.length < max && (
+        <button type="button" onClick={() => onChange([...value, ""])} className="text-sm text-navy underline underline-offset-4">
+          {value.length === 0 ? `+ Add ${label.toLowerCase()}` : "+ Add another"}
+        </button>
+      )}
+      {value.length > 1 && (
+        <p className="text-xs text-stone">They play one after another with a fade: a video plays to its end, a picture stays for 6 seconds. Empty ones are skipped when you save.</p>
+      )}
+    </div>
+  );
+}
+
 export function MoveButtons({ index, length, onMove }: { index: number; length: number; onMove: (from: number, to: number) => void }) {
   const base = "px-2 py-1 border border-line text-xs text-ink hover:border-navy disabled:opacity-30 disabled:hover:border-line";
   return (

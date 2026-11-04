@@ -107,6 +107,8 @@ export interface SiteSettings {
   projects: Project[];
   books: { page: { title: string; intro: string }; items: Book[]; recommendations: Recommendation[] };
   footer: { columns: FooterColumn[]; note: string; email: string };
+  /** Contact page: pictures or videos shown behind the form (one after another when there are several). */
+  contact: { media: string[] };
   hiddenMedium: string[];
 }
 
@@ -244,6 +246,7 @@ export const defaultSettings: SiteSettings = {
     note: `© ${siteConfig.name}. All rights reserved.`,
     email: "ozcanhakn@gmail.com",
   },
+  contact: { media: [] },
   hiddenMedium: [],
 };
 
@@ -301,6 +304,7 @@ export function mergeSettings(stored: unknown): SiteSettings {
   const hero = isRecord(stored.hero) ? stored.hero : {};
   const blocks = isRecord(stored.blocks) ? stored.blocks : {};
   const footer = isRecord(stored.footer) ? stored.footer : {};
+  const contact = isRecord(stored.contact) ? stored.contact : {};
   const b = (key: BlockId) => (isRecord(blocks[key]) ? (blocks[key] as Record<string, unknown>) : {});
 
   // Settings saved before the redesign kept their texts in `content`: carry the edits over.
@@ -458,6 +462,11 @@ export function mergeSettings(stored: unknown): SiteSettings {
       }),
       note: opt(footer.note, d.footer.note, 200),
       email: opt(footer.email, d.footer.email, 120),
+    },
+    contact: {
+      media: Array.isArray(contact.media)
+        ? contact.media.map((item) => image(item, "")).filter(Boolean).slice(0, 10)
+        : d.contact.media,
     },
     hiddenMedium: Array.isArray(stored.hiddenMedium)
       ? stored.hiddenMedium.filter((item): item is string => typeof item === "string")

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Card, LinksEditor, MoveButtons, SaveBar, TextField, moveItem } from "@/components/admin/fields";
+import { Card, LinksEditor, MediaListField, MoveButtons, SaveBar, TextField, moveItem } from "@/components/admin/fields";
 import { labelClass, type Status } from "@/components/admin/ui";
 import { DEFAULT_ACCENT, type SiteSettings } from "@/lib/settings";
 
@@ -15,12 +15,13 @@ export default function SiteTab({ settings, onSave }: Props) {
   const [brand, setBrand] = useState(settings.brand);
   const [nav, setNav] = useState(settings.nav);
   const [footer, setFooter] = useState(settings.footer);
+  const [contact, setContact] = useState(settings.contact);
   const [status, setStatus] = useState<Status>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const save = async () => {
     setIsSaving(true);
-    const error = await onSave({ ...settings, brand, nav, footer });
+    const error = await onSave({ ...settings, brand, nav, footer, contact });
     setStatus(error ? { kind: "error", text: error } : { kind: "ok", text: "Saved. Every page updates within a minute." });
     setIsSaving(false);
   };
@@ -57,6 +58,13 @@ export default function SiteTab({ settings, onSave }: Props) {
           <TextField label="Button text (top right)" value={nav.ctaLabel} max={40} hint="Leave empty to hide the button." onChange={(ctaLabel) => setNav({ ...nav, ctaLabel })} />
           <TextField label="Button link" value={nav.ctaHref} max={500} onChange={(ctaHref) => setNav({ ...nav, ctaHref })} />
         </div>
+      </Card>
+
+      <Card title="Contact page background">
+        <p className="text-xs text-stone">
+          Pictures or MP4/WebM videos shown behind the contact form. The text sits on a light panel so it stays readable. Leave empty for the plain white page.
+        </p>
+        <MediaListField label="Background" value={contact.media} onChange={(media) => setContact({ media })} />
       </Card>
 
       <Card title="Footer">
