@@ -1,7 +1,6 @@
-import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 
+import ArticleCard from "@/components/ArticleCard";
 import { siteConfig } from "@/content/site";
 import { formatDate } from "@/lib/blog";
 import { getSiteSettings } from "@/lib/settings";
@@ -39,41 +38,22 @@ export default async function BlogPage() {
             .
           </p>
         ) : (
-          <ul className="border-b border-line">
-            {entries.map((entry) => {
-              const body = (
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-x-8 gap-y-3 py-8 md:py-10">
-                  <p className="md:col-span-2 text-sm text-stone pt-1.5">{formatDate(entry.date)}</p>
-                  <div className="md:col-span-8">
-                    <h2 className="font-display text-3xl md:text-[34px] leading-[1.12] text-ink group-hover:text-navy transition-colors mb-3">
-                      {entry.title}
-                    </h2>
-                    {entry.summary && (
-                      <p className="text-[16px] leading-[1.7] text-stone max-w-2xl">{entry.summary}</p>
-                    )}
-                  </div>
-                  <p className="md:col-span-2 md:text-right text-xs font-medium tracking-[0.18em] uppercase text-brass pt-2 flex md:justify-end items-start gap-1">
-                    {entry.source}
-                    {entry.external && <ArrowUpRight size={14} strokeWidth={1.75} />}
-                  </p>
-                </div>
-              );
-
-              return (
-                <li key={entry.key} className="group border-t border-line">
-                  {entry.external ? (
-                    <a href={entry.href} target="_blank" rel="noopener noreferrer" className="block">
-                      {body}
-                    </a>
-                  ) : (
-                    <Link href={entry.href} className="block">
-                      {body}
-                    </Link>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+          <div className="border-b border-ink/20">
+            {entries.map((entry) => (
+              <ArticleCard
+                key={entry.key}
+                layout="row"
+                href={entry.href}
+                external={entry.external}
+                kicker={entry.source}
+                title={entry.title}
+                summary={entry.summary}
+                meta={formatDate(entry.date)}
+                image={entry.thumbnail}
+                placeholder={entry.title}
+              />
+            ))}
+          </div>
         )}
 
         <p className="mt-10 text-sm text-stone">

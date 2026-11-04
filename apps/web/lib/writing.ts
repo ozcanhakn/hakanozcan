@@ -43,7 +43,7 @@ export async function getWritingEntries(settings: SiteSettings): Promise<Writing
       href: post.href,
       external: true,
       source: "Medium",
-      thumbnail: null,
+      thumbnail: post.thumbnail,
     })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }

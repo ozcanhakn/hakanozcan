@@ -6,6 +6,16 @@ export interface MediumPost {
   date: string;
   summary: string;
   tags: string[];
+  thumbnail: string | null;
+}
+
+/** First real picture of the article. Medium's tracking pixel (/_/stat) and non-https sources are skipped. */
+function firstImage(html: string): string | null {
+  for (const match of html.matchAll(/<img\b[^>]*?\bsrc=["']([^"']+)["']/gi)) {
+    const src = decodeEntities(match[1] ?? "").trim();
+    if (src.startsWith("https://") && !src.includes("/_/stat")) return src;
+  }
+  return null;
 }
 
 function decodeEntities(value: string): string {
@@ -60,12 +70,15 @@ export async function getMediumPosts(): Promise<MediumPost[]> {
       const url = new URL(link);
       url.search = "";
 
+      const html = readTag(item, "content:encoded");
+
       return [
         {
           title,
           href: url.toString(),
           date: date.toISOString(),
-          summary: summarize(readTag(item, "content:encoded")),
+          summary: summarize(html),
+          thumbnail: firstImage(html),
           tags: [...item.matchAll(/<category><!\[CDATA\[(.*?)\]\]><\/category>/g)]
             .map((m) => m[1] ?? "")
             .filter(Boolean),
