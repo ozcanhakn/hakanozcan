@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { Card, ImageField, MoveButtons, SaveBar, TextField, Toggle, moveItem } from "@/components/admin/fields";
-import { type Status } from "@/components/admin/ui";
+import { Card, ImageField, MediaListField, MoveButtons, SaveBar, TextField, Toggle, moveItem } from "@/components/admin/fields";
+import { labelClass, type Status } from "@/components/admin/ui";
 import type { BlockId, SiteSettings } from "@/lib/settings";
 
 const BLOCK_LABELS: Record<BlockId, { name: string; hint: string }> = {
@@ -149,6 +149,13 @@ export default function HomeTab({ settings, onSave }: Props) {
         <div className="grid md:grid-cols-2 gap-6">
           <TextField label="Button text" value={blocks.cta.buttonLabel} max={40} onChange={(buttonLabel) => patchBlock("cta", { buttonLabel })} />
           <TextField label="Button link" value={blocks.cta.buttonHref} max={500} onChange={(buttonHref) => patchBlock("cta", { buttonHref })} />
+        </div>
+        <div>
+          <span className={labelClass}>Background (optional)</span>
+          <p className="text-xs text-stone mb-3">
+            Pictures or MP4/WebM videos shown behind the text, which stays on top without a panel. Leave empty to keep the plain colored band.
+          </p>
+          <MediaListField label="Background" value={blocks.cta.media} onChange={(media) => patchBlock("cta", { media })} />
         </div>
       </div>
     ),

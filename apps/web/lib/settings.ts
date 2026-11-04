@@ -102,7 +102,8 @@ export interface SiteSettings {
     writing: { enabled: boolean; eyebrow: string; title: string; count: number; linkLabel: string };
     project: { enabled: boolean; eyebrow: string; title: string };
     quote: { enabled: boolean; text: string; author: string };
-    cta: { enabled: boolean; eyebrow: string; heading: string; body: string; buttonLabel: string; buttonHref: string };
+    /** `media`: optional pictures or videos behind the band; empty keeps the plain colored band. */
+    cta: { enabled: boolean; eyebrow: string; heading: string; body: string; buttonLabel: string; buttonHref: string; media: string[] };
   };
   projects: Project[];
   books: { page: { title: string; intro: string }; items: Book[]; recommendations: Recommendation[] };
@@ -162,6 +163,7 @@ export const defaultSettings: SiteSettings = {
       body: "About a project, a collaboration, or just to say hello.",
       buttonLabel: "Get in touch",
       buttonHref: "/contact",
+      media: [],
     },
   },
   projects: defaultProjects.map((project) => ({
@@ -399,6 +401,9 @@ export function mergeSettings(stored: unknown): SiteSettings {
         body: opt(cta.body, d.blocks.cta.body, 400),
         buttonLabel: opt(cta.buttonLabel, d.blocks.cta.buttonLabel, 40),
         buttonHref: link(cta.buttonHref, d.blocks.cta.buttonHref),
+        media: Array.isArray(cta.media)
+          ? cta.media.map((item) => image(item, "")).filter(Boolean).slice(0, 10)
+          : d.blocks.cta.media,
       },
     },
     projects: list(stored.projects, d.projects, 30, (item) => {
