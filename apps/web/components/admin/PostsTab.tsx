@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { ImageField } from "@/components/admin/fields";
 import { areaClass, fieldClass, labelClass, primaryButton, type Status } from "@/components/admin/ui";
 import Markdown from "@/components/Markdown";
 import type { Post } from "@/lib/blog";
@@ -202,16 +203,7 @@ export default function PostsTab({ onUnauthorized }: { onUnauthorized: () => voi
           />
         </div>
 
-        <div>
-          <label htmlFor="thumbnail" className={labelClass}>Cover image URL (optional)</label>
-          <input
-            id="thumbnail"
-            type="url"
-            value={draft.thumbnail}
-            onChange={(e) => update({ thumbnail: e.target.value })}
-            className={fieldClass}
-          />
-        </div>
+        <ImageField label="Cover image (optional)" value={draft.thumbnail} onChange={(thumbnail) => update({ thumbnail })} />
 
         <div>
           <div className="flex items-center justify-between mb-2">

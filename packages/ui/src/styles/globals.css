@@ -45,6 +45,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --site-accent: #0b6e99;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -130,16 +131,18 @@
 @theme inline {
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-display: var(--font-display-face), Georgia, "Times New Roman", serif;
+  --font-head: var(--font-head-face), var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --color-cream: #f5f1e8;
-  --color-cream-deep: #ece6d8;
-  --color-ink: #14181f;
-  --color-stone: #5b6270;
-  --color-navy: #12203a;
-  --color-navy-2: #1b2d4f;
-  --color-brass: #7f6330;
-  --color-brass-light: #cdb27a;
-  --color-line: #d9d1bf;
+  --color-cream: #ffffff;
+  --color-cream-deep: #f4f6f8;
+  --color-ink: #0f1419;
+  --color-stone: #59616d;
+  /* The accent color is set from the admin panel (see --site-accent in :root). */
+  --color-navy: var(--site-accent);
+  --color-navy-2: color-mix(in srgb, var(--site-accent) 82%, black);
+  --color-brass: var(--site-accent);
+  --color-brass-light: color-mix(in srgb, var(--site-accent) 45%, white);
+  --color-line: #e3e6ea;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -185,6 +188,12 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Headlines set in the serif display font are bold, like article titles on Gates Notes. */
+  .font-display {
+    font-weight: 700;
+    letter-spacing: -0.01em;
   }
 }
 

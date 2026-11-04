@@ -3,17 +3,21 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import BooksTab from "@/components/admin/BooksTab";
+import HomeTab from "@/components/admin/HomeTab";
 import MediumTab from "@/components/admin/MediumTab";
 import PostsTab from "@/components/admin/PostsTab";
-import SectionsTab from "@/components/admin/SectionsTab";
-import TextsTab from "@/components/admin/TextsTab";
+import ProjectsTab from "@/components/admin/ProjectsTab";
+import SiteTab from "@/components/admin/SiteTab";
 import type { SiteSettings } from "@/lib/settings";
 
 const tabs = [
   { id: "posts", label: "Posts" },
   { id: "medium", label: "Medium" },
   { id: "home", label: "Home page" },
-  { id: "texts", label: "Texts" },
+  { id: "books", label: "Books" },
+  { id: "projects", label: "Projects" },
+  { id: "site", label: "Menu & footer" },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
@@ -72,7 +76,7 @@ export default function AdminPanel() {
 
   return (
     <section>
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 md:py-16">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 pt-28 pb-12 md:pt-32 md:pb-16">
         <div className="flex items-end justify-between gap-6 mb-8">
           <div>
             <p className="text-xs font-medium tracking-[0.22em] uppercase text-brass mb-3">Admin</p>
@@ -110,8 +114,10 @@ export default function AdminPanel() {
             )}
             {!settings && !loadError && <p className="text-sm text-stone">Loading...</p>}
             {settings && tab === "medium" && <MediumTab settings={settings} onSave={saveSettings} onUnauthorized={onUnauthorized} />}
-            {settings && tab === "home" && <SectionsTab settings={settings} onSave={saveSettings} />}
-            {settings && tab === "texts" && <TextsTab settings={settings} onSave={saveSettings} />}
+            {settings && tab === "home" && <HomeTab settings={settings} onSave={saveSettings} />}
+            {settings && tab === "books" && <BooksTab settings={settings} onSave={saveSettings} />}
+            {settings && tab === "projects" && <ProjectsTab settings={settings} onSave={saveSettings} />}
+            {settings && tab === "site" && <SiteTab settings={settings} onSave={saveSettings} />}
           </>
         )}
       </div>

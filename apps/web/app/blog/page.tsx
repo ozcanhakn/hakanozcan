@@ -3,55 +3,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { siteConfig } from "@/content/site";
-import { formatDate, getPosts, normalizeTitle } from "@/lib/blog";
-import { getMediumPosts } from "@/lib/medium";
+import { formatDate } from "@/lib/blog";
 import { getSiteSettings } from "@/lib/settings";
+import { getWritingEntries } from "@/lib/writing";
 
 export const revalidate = 60;
 export const metadata: Metadata = { title: "Writing" };
 
-interface Entry {
-  key: string;
-  title: string;
-  summary: string;
-  date: string;
-  href: string;
-  external: boolean;
-  source: string;
-}
-
 export default async function BlogPage() {
-  const [mediumAll, notes, settings] = await Promise.all([getMediumPosts(), getPosts(), getSiteSettings()]);
-
-  // A post that exists both on the site and on Medium is listed once, as the on-site version.
-  const onSite = new Set(notes.map((post) => normalizeTitle(post.title)));
-  const hidden = new Set(settings.hiddenMedium);
-  const medium = mediumAll.filter((post) => !onSite.has(normalizeTitle(post.title)) && !hidden.has(post.href));
-
-  const entries: Entry[] = [
-    ...notes.map((post) => ({
-      key: `note-${post.id}`,
-      title: post.title,
-      summary: post.summary,
-      date: post.created_at,
-      href: `/blog/${post.slug}`,
-      external: false,
-      source: "Notes",
-    })),
-    ...medium.map((post) => ({
-      key: post.href,
-      title: post.title,
-      summary: post.summary,
-      date: post.date,
-      href: post.href,
-      external: true,
-      source: "Medium",
-    })),
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  // Site posts and Medium articles are merged in lib/writing.ts (hidden and duplicate ones removed).
+  const entries = await getWritingEntries(await getSiteSettings());
 
   return (
     <section>
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16 md:py-24">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 pt-32 pb-16 md:pt-40 md:pb-24">
         <div className="mb-14 max-w-2xl">
           <p className="text-xs font-medium tracking-[0.22em] uppercase text-brass mb-5">Writing</p>
           <h1 className="font-display text-[clamp(3rem,6vw,5rem)] leading-[1] text-ink mb-6">Writing</h1>

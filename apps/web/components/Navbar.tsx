@@ -1,101 +1,103 @@
 "use client";
 
-import { Github, Linkedin, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { siteConfig } from "@/content/site";
+import SearchButton from "@/components/SearchButton";
+import SmartLink from "@/components/SmartLink";
+import type { SiteSettings } from "@/lib/settings";
 
-const navLinks = [
-  { name: "About", path: "/#about" },
-  { name: "Work", path: "/projects" },
-  { name: "Writing", path: "/blog" },
-  { name: "Contact", path: "/contact" },
-];
+interface Props {
+  brand: SiteSettings["brand"];
+  nav: SiteSettings["nav"];
+}
 
-export default function Navbar() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+/** A floating dark bar over the page, like Gates Notes: menu button, name, then the links. */
+export default function Navbar({ brand, nav }: Props) {
+  const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
-    document.body.style.overflow = mobileMenuOpen ? "hidden" : "unset";
+    document.body.style.overflow = open ? "hidden" : "unset";
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [mobileMenuOpen]);
+  }, [open]);
+
+  const isActive = (href: string) => href.startsWith("/") && !href.includes("#") && href !== "/" && pathname.startsWith(href);
+  const hasCta = Boolean(nav.ctaLabel && nav.ctaHref);
 
   return (
-    <header className="sticky top-0 z-[100] bg-navy text-cream border-b border-white/10">
-      <div className="max-w-6xl mx-auto grid grid-cols-[1fr_auto_1fr] items-center h-20 px-6 lg:px-8">
-        <nav className="hidden md:flex items-center gap-8" aria-label="Main">
-          {navLinks.slice(0, 3).map((link) => {
-            const isActive = link.path !== "/#about" && pathname.startsWith(link.path);
-            return (
-              <Link
-                key={link.path}
-                href={link.path}
-                aria-current={isActive ? "page" : undefined}
-                className={`text-[13px] font-medium tracking-wide transition-colors ${
-                  isActive ? "text-brass-light" : "text-cream/75 hover:text-cream"
-                }`}
-              >
-                {link.name}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <Link
-          href="/"
-          className="col-start-1 md:col-start-2 font-display text-2xl md:text-[28px] tracking-[0.18em] uppercase whitespace-nowrap"
-          onClick={() => setMobileMenuOpen(false)}
-        >
-          {siteConfig.name}
-        </Link>
-
-        <div className="hidden md:flex items-center justify-end gap-6">
-          <a href={siteConfig.socials.github} target="_blank" rel="noreferrer" aria-label="GitHub" className="text-cream/70 hover:text-cream transition-colors">
-            <Github size={17} strokeWidth={1.5} />
-          </a>
-          <a href={siteConfig.socials.linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn" className="text-cream/70 hover:text-cream transition-colors">
-            <Linkedin size={17} strokeWidth={1.5} />
-          </a>
-          <Link
-            href="/contact"
-            className="text-[13px] font-medium tracking-wide border border-brass-light/60 px-5 py-2 text-cream hover:bg-brass-light hover:text-navy transition-colors"
-          >
-            Contact
-          </Link>
-        </div>
-
-        <button
-          className="md:hidden justify-self-end col-start-3 text-cream p-2"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-          aria-expanded={mobileMenuOpen}
-        >
-          {mobileMenuOpen ? <X size={24} strokeWidth={1.5} /> : <Menu size={24} strokeWidth={1.5} />}
-        </button>
-      </div>
-
-      {mobileMenuOpen && (
-        <nav
-          className="md:hidden fixed inset-x-0 top-20 bottom-0 bg-navy flex flex-col justify-center gap-6 px-8"
-          aria-label="Mobile"
-        >
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              href={link.path}
-              onClick={() => setMobileMenuOpen(false)}
-              className="font-display text-5xl tracking-tight text-cream hover:text-brass-light transition-colors"
+    // The header has no height of its own, so the page starts at the very top and the bar floats over it.
+    <header className="sticky top-0 z-[100] h-0">
+      <div className="px-3 md:px-6 pt-3 md:pt-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-stretch h-14 rounded-xl bg-[#17181b]/95 backdrop-blur text-white shadow-lg shadow-black/10">
+            <button
+              className="md:hidden w-14 grid place-items-center border-r border-white/15"
+              onClick={() => setOpen(!open)}
+              aria-label="Toggle menu"
+              aria-expanded={open}
             >
-              {link.name}
+              {open ? <X size={22} strokeWidth={1.75} /> : <Menu size={22} strokeWidth={1.75} />}
+            </button>
+
+            <Link
+              href="/"
+              onClick={() => setOpen(false)}
+              className="flex-1 md:flex-none md:px-6 grid md:block place-items-center md:content-center font-head text-[19px] font-extrabold tracking-tight whitespace-nowrap"
+            >
+              {brand.name}
             </Link>
-          ))}
-        </nav>
-      )}
+
+            <nav className="hidden md:flex flex-1 items-center justify-end gap-8 px-6" aria-label="Main">
+              {nav.links.map((link) => (
+                <SmartLink
+                  key={`${link.label}-${link.href}`}
+                  href={link.href}
+                  aria-current={isActive(link.href) ? "page" : undefined}
+                  className={`text-[15px] font-semibold transition-colors ${
+                    isActive(link.href) ? "text-white" : "text-white/70 hover:text-white"
+                  }`}
+                >
+                  {link.label}
+                </SmartLink>
+              ))}
+            </nav>
+
+            {hasCta && (
+              <SmartLink
+                href={nav.ctaHref}
+                className="hidden md:grid place-items-center m-2 px-5 rounded-lg bg-white text-ink text-sm font-bold hover:bg-white/85 transition-colors"
+              >
+                {nav.ctaLabel}
+              </SmartLink>
+            )}
+            {/* One search button for every screen size: right edge on phones, beside Contact on larger screens. */}
+            <SearchButton className="grid place-items-center w-14 md:w-10 md:my-2 md:mr-2 md:rounded-lg md:border md:border-white/25 text-white/85 hover:text-white md:hover:bg-white/10 transition-colors" />
+          </div>
+
+          {open && (
+            <nav
+              className="md:hidden mt-2 rounded-xl bg-[#17181b] text-white p-6 flex flex-col gap-1 shadow-xl"
+              aria-label="Mobile"
+            >
+              {[...nav.links, ...(hasCta ? [{ label: nav.ctaLabel, href: nav.ctaHref }] : [])].map((link) => (
+                <SmartLink
+                  key={`${link.label}-${link.href}`}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className="font-head text-3xl font-extrabold tracking-tight py-3 border-b border-white/10 last:border-0 hover:text-white/70 transition-colors"
+                >
+                  {link.label}
+                </SmartLink>
+              ))}
+            </nav>
+          )}
+        </div>
+      </div>
     </header>
   );
 }

@@ -77,7 +77,7 @@ export default function Contact() {
 
   return (
     <section>
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16 md:py-24 grid grid-cols-1 lg:grid-cols-12 gap-16">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 pt-32 pb-16 md:pt-40 md:pb-24 grid grid-cols-1 lg:grid-cols-12 gap-16">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}

@@ -22,7 +22,7 @@ export async function PUT(request: Request) {
   const result = await adminSaveSettings(parsed.value);
   if (!result.ok) return Response.json({ error: result.error }, { status: result.status });
 
-  revalidatePath("/");
-  revalidatePath("/blog");
+  // Navigation, footer and theme are on every page, so refresh the whole site.
+  revalidatePath("/", "layout");
   return Response.json({ settings: result.data });
 }

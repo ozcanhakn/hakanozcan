@@ -26,7 +26,7 @@ export default async function BlogDetail({ params }: Props) {
 
   return (
     <article>
-      <div className="max-w-3xl mx-auto px-6 lg:px-8 py-16 md:py-24">
+      <div className="max-w-3xl mx-auto px-6 lg:px-8 pt-32 pb-16 md:pt-40 md:pb-24">
         <Link
           href="/blog"
           className="inline-flex items-center gap-2 text-sm text-stone hover:text-navy transition-colors mb-12"
