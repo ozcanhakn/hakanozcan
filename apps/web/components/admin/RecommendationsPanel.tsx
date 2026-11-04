@@ -5,6 +5,7 @@ import { useMemo, useRef, useState } from "react";
 import { ImageField, Modal, TextField, Toggle } from "@/components/admin/fields";
 import { areaClass, labelClass, primaryButton, type Status } from "@/components/admin/ui";
 import RecommendationBody from "@/components/RecommendationBody";
+import SiteImage from "@/components/SiteImage";
 import type { Book, Recommendation } from "@/lib/settings";
 import { slugify, uniqueId } from "@/lib/slug";
 
@@ -146,7 +147,7 @@ export default function RecommendationsPanel({ recommendations, books, onSave }:
               <button type="button" onClick={() => open(item)} className="flex flex-1 min-w-0 items-center gap-4 text-left group">
                 {item.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={item.image} alt="" className="h-16 w-24 shrink-0 rounded-md object-cover border border-line" />
+                  <SiteImage src={item.image} className="h-16 w-24 shrink-0 rounded-md object-cover border border-line" />
                 ) : (
                   <span className="h-16 w-24 shrink-0 rounded-md border border-dashed border-line bg-cream-deep" />
                 )}

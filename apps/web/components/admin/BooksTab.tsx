@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Card, ImageField, Modal, SaveBar, TextField, Toggle } from "@/components/admin/fields";
 import RecommendationsPanel from "@/components/admin/RecommendationsPanel";
 import { areaClass, fieldClass, labelClass, primaryButton, type Status } from "@/components/admin/ui";
+import SiteImage from "@/components/SiteImage";
 import { bookTags, type Book, type Recommendation, type SiteSettings } from "@/lib/settings";
 import { slugify, uniqueId } from "@/lib/slug";
 
@@ -197,7 +198,7 @@ export default function BooksTab({ settings, onSave }: Props) {
                         <button type="button" onClick={() => openEditor(book)} className="flex gap-4 text-left group flex-1">
                           {book.image ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={book.image} alt="" className="h-28 w-20 shrink-0 rounded-md object-cover border border-line" />
+                            <SiteImage src={book.image} className="h-28 w-20 shrink-0 rounded-md object-cover border border-line" />
                           ) : (
                             <span className="h-28 w-20 shrink-0 rounded-md border border-dashed border-line bg-cream-deep" />
                           )}

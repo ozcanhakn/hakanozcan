@@ -1,6 +1,9 @@
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+import SiteVideo from "@/components/SiteVideo";
+import { isVideo } from "@/lib/media";
+
 const components: Components = {
   h1: ({ node, ...props }) => <h2 className="font-display text-4xl leading-[1.1] text-ink mt-14 mb-5" {...props} />,
   h2: ({ node, ...props }) => <h2 className="font-display text-4xl leading-[1.1] text-ink mt-14 mb-5" {...props} />,
@@ -22,10 +25,14 @@ const components: Components = {
     <blockquote className="font-display italic text-2xl leading-[1.35] text-ink border-l-2 border-brass pl-6 my-8" {...props} />
   ),
   hr: () => <hr className="my-12 border-line" />,
-  img: ({ node, alt, ...props }) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img alt={alt ?? ""} loading="lazy" className="w-full my-8 border border-line" {...props} />
-  ),
+  // A picture, GIF or (for an .mp4/.webm address) a silent looping clip.
+  img: ({ node, alt, src, ...props }) =>
+    typeof src === "string" && isVideo(src) ? (
+      <SiteVideo src={src} className="w-full my-8 border border-line" />
+    ) : (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img alt={alt ?? ""} src={typeof src === "string" ? src : undefined} loading="lazy" className="w-full my-8 border border-line" {...props} />
+    ),
   pre: ({ node, ...props }) => (
     <pre className="my-8 overflow-x-auto bg-navy text-cream p-5 text-sm leading-relaxed font-mono" {...props} />
   ),

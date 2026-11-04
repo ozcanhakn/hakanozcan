@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { areaClass, fieldClass, labelClass, primaryButton, type Status } from "@/components/admin/ui";
+import SiteImage from "@/components/SiteImage";
 import type { NavLink } from "@/lib/settings";
 
 interface TextProps {
@@ -62,12 +63,20 @@ export function ImageField({ label, value, onChange }: { label: string; value: s
     setBusy(true);
     setError("");
     try {
-      const body = new FormData();
-      body.append("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body });
+      // Step 1: ask the server for a signed address. Step 2: send the file straight to storage.
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: file.type, size: file.size }),
+      });
       if (res.status === 401) return window.location.reload();
-      const data = (await res.json().catch(() => null)) as { url?: string; error?: string } | null;
-      if (!res.ok || !data?.url) setError(data?.error ?? "The image could not be uploaded.");
+      const data = (await res.json().catch(() => null)) as { uploadUrl?: string; url?: string; error?: string } | null;
+      if (!res.ok || !data?.url || !data.uploadUrl) {
+        setError(data?.error ?? "The file could not be uploaded.");
+        return;
+      }
+      const sent = await fetch(data.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+      if (!sent.ok) setError("The file could not be uploaded.");
       else onChange(data.url);
     } catch {
       setError("Could not reach the server.");
@@ -82,8 +91,7 @@ export function ImageField({ label, value, onChange }: { label: string; value: s
       <span className={labelClass}>{label}</span>
       <div className="flex items-start gap-4">
         {value ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={value} alt="" className="h-16 w-24 shrink-0 object-cover border border-line bg-cream-deep" />
+          <SiteImage src={value} className="h-16 w-24 shrink-0 object-cover border border-line bg-cream-deep" />
         ) : (
           <div className="h-16 w-24 shrink-0 border border-dashed border-line bg-cream-deep" />
         )}
@@ -91,7 +99,7 @@ export function ImageField({ label, value, onChange }: { label: string; value: s
           <input
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="https://… or upload an image"
+            placeholder="https://… or upload an image or video"
             className={fieldClass}
             aria-label={`${label} address`}
           />
@@ -99,7 +107,7 @@ export function ImageField({ label, value, onChange }: { label: string; value: s
             <input
               ref={input}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+              accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm"
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -107,8 +115,9 @@ export function ImageField({ label, value, onChange }: { label: string; value: s
               }}
             />
             <button type="button" disabled={busy} onClick={() => input.current?.click()} className="text-navy underline underline-offset-4 disabled:opacity-50">
-              {busy ? "Uploading..." : "Upload image"}
+              {busy ? "Uploading..." : "Upload image or video"}
             </button>
+            <span className="text-stone">Images up to 10 MB; MP4 or WebM video up to 40 MB (plays silently on a loop).</span>
             {value && (
               <button type="button" onClick={() => onChange("")} className="text-red-800 underline underline-offset-4">
                 Remove
