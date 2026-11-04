@@ -179,7 +179,7 @@ export default function HomeTab({ settings, onSave }: Props) {
             </button>
           </div>
         ))}
-        {hero.image && hero.moreMedia.length < 5 && (
+        {hero.image && hero.moreMedia.length < 9 && (
           <button
             type="button"
             onClick={() => patchHero({ moreMedia: [...hero.moreMedia, ""] })}

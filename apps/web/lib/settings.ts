@@ -345,7 +345,7 @@ export function mergeSettings(stored: unknown): SiteSettings {
       subheadline: opt(hero.subheadline, typeof legacy.intro === "string" ? legacy.intro : d.hero.subheadline, 600),
       image: image(hero.image, d.hero.image),
       moreMedia: Array.isArray(hero.moreMedia)
-        ? hero.moreMedia.map((item) => image(item, "")).filter(Boolean).slice(0, 5)
+        ? hero.moreMedia.map((item) => image(item, "")).filter(Boolean).slice(0, 9)
         : d.hero.moreMedia,
       ctaLabel: opt(hero.ctaLabel, d.hero.ctaLabel, 40),
       ctaHref: link(hero.ctaHref, d.hero.ctaHref),
