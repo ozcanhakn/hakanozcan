@@ -2,7 +2,7 @@ import { getSiteSettings } from "@/lib/settings";
 import { getWritingEntries } from "@/lib/writing";
 
 interface Hit {
-  type: "Page" | "Book" | "Project" | "Writing";
+  type: "Page" | "Book" | "Recommendation" | "Project" | "Writing";
   title: string;
   summary: string;
   href: string;
@@ -44,11 +44,17 @@ export async function GET(request: Request) {
   }
 
   for (const book of settings.books.items) {
-    // A book without a review or link still shows up, and leads to the Books page.
-    const href = book.review.trim() ? `/books/${book.id}` : book.href || "/books";
     add(
-      { type: "Book", title: book.title, summary: [book.author, book.summary].filter(Boolean).join(" · "), href, external: isExternal(href) },
+      { type: "Book", title: book.title, summary: [book.author, book.summary].filter(Boolean).join(" · "), href: `/books/${book.id}`, external: false },
       [book.category, book.kicker, book.review]
+    );
+  }
+
+  for (const item of settings.books.recommendations) {
+    if (!item.published) continue;
+    add(
+      { type: "Recommendation", title: item.title, summary: item.summary, href: `/recommendations/${item.id}`, external: false },
+      [item.body]
     );
   }
 

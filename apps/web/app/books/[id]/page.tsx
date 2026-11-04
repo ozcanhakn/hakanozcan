@@ -3,9 +3,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import BookCard from "@/components/BookCard";
 import Markdown from "@/components/Markdown";
 import SiteImage from "@/components/SiteImage";
-import { getSiteSettings } from "@/lib/settings";
+import { bookTags, getSiteSettings } from "@/lib/settings";
 
 export const revalidate = 60;
 
@@ -15,17 +16,27 @@ interface Props {
 
 async function findBook(id: string) {
   const { books } = await getSiteSettings();
-  return books.items.find((book) => book.id === id && book.review.trim());
+  const book = books.items.find((item) => item.id === id);
+  // More books that share a category, to keep readers browsing.
+  const tags = book ? bookTags(book.category).map((tag) => tag.toLowerCase()) : [];
+  const related = book
+    ? books.items
+        .filter((item) => item.id !== book.id && bookTags(item.category).some((tag) => tags.includes(tag.toLowerCase())))
+        .slice(0, 2)
+    : [];
+  return { book, related };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const book = await findBook((await params).id);
+  const { book } = await findBook((await params).id);
   return book ? { title: book.title, description: book.summary } : { title: "Not found" };
 }
 
-export default async function BookReview({ params }: Props) {
-  const book = await findBook((await params).id);
+export default async function BookPage({ params }: Props) {
+  const { book, related } = await findBook((await params).id);
   if (!book) notFound();
+
+  const hasReview = book.review.trim().length > 0;
 
   return (
     <article>
@@ -37,7 +48,9 @@ export default async function BookReview({ params }: Props) {
 
         <header className="mb-10">
           {(book.kicker || book.category) && (
-            <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-ink mb-4">{book.kicker || book.category}</p>
+            <p className="text-[11px] font-bold tracking-[0.14em] uppercase text-ink mb-4">
+              {book.kicker || bookTags(book.category).join(" · ")}
+            </p>
           )}
           <h1 className="font-display text-[clamp(2.5rem,5vw,4rem)] leading-[1.05] text-ink mb-5">{book.title}</h1>
           {book.author && <p className="text-lg text-stone">by {book.author}</p>}
@@ -46,7 +59,11 @@ export default async function BookReview({ params }: Props) {
 
         {book.image && <SiteImage src={book.image} alt={book.title} className="w-full rounded-xl mb-12" />}
 
-        <Markdown>{book.review}</Markdown>
+        {hasReview ? (
+          <Markdown>{book.review}</Markdown>
+        ) : (
+          <p className="border-t border-line pt-8 text-stone">My notes on this book are coming soon.</p>
+        )}
 
         {book.href && (
           <a
@@ -60,6 +77,19 @@ export default async function BookReview({ params }: Props) {
           </a>
         )}
       </div>
+
+      {related.length > 0 && (
+        <section className="border-t border-line">
+          <div className="max-w-6xl mx-auto px-6 lg:px-10 py-14 md:py-20">
+            <h2 className="font-head text-3xl md:text-4xl font-extrabold tracking-tight text-ink mb-10">More like this</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
+              {related.map((item) => (
+                <BookCard key={item.id} book={item} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </article>
   );
 }

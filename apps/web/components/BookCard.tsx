@@ -1,28 +1,23 @@
 import ArticleCard from "@/components/ArticleCard";
-import type { Book } from "@/lib/settings";
+import { bookTags, type Book } from "@/lib/settings";
 
-/** A book opens its on-site review when it has one, otherwise the link saved with it. */
+/** Every book has its own page: /books/<id>. */
 export function bookHref(book: Book): string {
-  return book.review.trim() ? `/books/${book.id}` : book.href;
+  return `/books/${book.id}`;
 }
 
 export default function BookCard({ book, layout, large }: { book: Book; layout?: "feature" | "row"; large?: boolean }) {
-  const href = bookHref(book);
-  const inner = (
+  return (
     <ArticleCard
-      href={href || "#"}
-      kicker={book.kicker || book.category}
+      href={bookHref(book)}
+      kicker={book.kicker || bookTags(book.category)[0]}
       title={book.title}
       summary={book.summary}
       meta={book.author ? `by ${book.author}` : undefined}
       image={book.image}
       placeholder={book.title}
-      external={/^https?:/i.test(href)}
       layout={layout}
       large={large}
     />
   );
-
-  // A book with neither a review nor a link has nowhere to go, so it is shown without a link.
-  return href ? inner : <div className="pointer-events-none">{inner}</div>;
 }

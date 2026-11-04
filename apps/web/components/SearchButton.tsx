@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Hit {
-  type: "Page" | "Book" | "Project" | "Writing";
+  type: "Page" | "Book" | "Recommendation" | "Project" | "Writing";
   title: string;
   summary: string;
   href: string;

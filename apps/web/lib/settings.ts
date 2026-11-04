@@ -23,6 +23,33 @@ export interface Book {
   featured: boolean;
 }
 
+/** A written recommendation, like a reading list. Its body can embed books with {{book:id}} on its own line. */
+export interface Recommendation {
+  id: string;
+  title: string;
+  summary: string;
+  image: string;
+  /** Markdown, with `{{book:book-id}}` lines that become book cards. */
+  body: string;
+  published: boolean;
+  /** ISO date, shown on the page and used to order the list (newest first). */
+  date: string;
+}
+
+/** Categories are typed as one comma separated line: "Psychology, Philosophy". */
+export function bookTags(category: string): string[] {
+  const seen = new Set<string>();
+  return category
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter((tag) => {
+      const key = tag.toLowerCase();
+      if (!tag || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
 export interface NavLink {
   label: string;
   href: string;
@@ -76,7 +103,7 @@ export interface SiteSettings {
     cta: { enabled: boolean; eyebrow: string; heading: string; body: string; buttonLabel: string; buttonHref: string };
   };
   projects: Project[];
-  books: { page: { title: string; intro: string }; items: Book[] };
+  books: { page: { title: string; intro: string }; items: Book[]; recommendations: Recommendation[] };
   footer: { columns: FooterColumn[]; note: string; email: string };
   hiddenMedium: string[];
 }
@@ -187,6 +214,7 @@ export const defaultSettings: SiteSettings = {
         featured: false,
       },
     ],
+    recommendations: [],
   },
   footer: {
     columns: [
@@ -393,12 +421,27 @@ export function mergeSettings(stored: unknown): SiteSettings {
           title,
           author: opt(item.author, "", 120),
           kicker: opt(item.kicker, "", 60),
-          category: opt(item.category, "", 40),
+          // Several categories fit on one line ("Psychology, Philosophy, Mythology"), so this is generous.
+          category: opt(item.category, "", 200),
           summary: opt(item.summary, "", 400),
           image: image(item.image, ""),
           review: typeof item.review === "string" ? item.review.slice(0, 50_000) : "",
           href: link(item.href, ""),
           featured: item.featured === true,
+        };
+      }),
+      recommendations: list(isRecord(stored.books) ? stored.books.recommendations : undefined, d.books.recommendations, 100, (item) => {
+        const title = opt(item.title, "", 160);
+        if (!title) return null;
+        const date = typeof item.date === "string" && !Number.isNaN(Date.parse(item.date)) ? item.date : new Date().toISOString();
+        return {
+          id: opt(item.id, "", 60) || slugId(title),
+          title,
+          summary: opt(item.summary, "", 400),
+          image: image(item.image, ""),
+          body: typeof item.body === "string" ? item.body.slice(0, 60_000) : "",
+          published: item.published !== false,
+          date,
         };
       }),
     },

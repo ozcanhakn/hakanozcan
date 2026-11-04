@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { areaClass, fieldClass, labelClass, primaryButton, type Status } from "@/components/admin/ui";
 import type { NavLink } from "@/lib/settings";
@@ -13,16 +13,27 @@ interface TextProps {
   rows?: number;
   hint?: string;
   placeholder?: string;
+  /** id of a <datalist> that offers suggestions while typing. */
+  list?: string;
+  autoFocus?: boolean;
 }
 
-export function TextField({ label, value, onChange, max, rows, hint, placeholder }: TextProps) {
+export function TextField({ label, value, onChange, max, rows, hint, placeholder, list, autoFocus }: TextProps) {
   return (
     <label className="block">
       <span className={labelClass}>{label}</span>
       {rows ? (
         <textarea rows={rows} maxLength={max} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} className={areaClass} />
       ) : (
-        <input maxLength={max} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} className={fieldClass} />
+        <input
+          maxLength={max}
+          value={value}
+          list={list}
+          autoFocus={autoFocus}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          className={fieldClass}
+        />
       )}
       {hint && <span className="block text-xs text-stone mt-1">{hint}</span>}
     </label>
@@ -168,6 +179,51 @@ export function SaveBar({ status, isSaving, onSave, label }: { status: Status; i
           {status.text}
         </p>
       )}
+    </div>
+  );
+}
+
+/** A popup window. Closes with Esc, the X, or a click on the dark area behind it. */
+export function Modal({
+  title,
+  onClose,
+  children,
+  footer,
+  wide = false,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+  /** A wider window, for longer writing. */
+  wide?: boolean;
+}) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previous;
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[400] bg-black/55 backdrop-blur-sm flex items-start justify-center p-3 sm:p-6 overflow-y-auto"
+      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
+    >
+      <div role="dialog" aria-modal="true" aria-label={title} className={`w-full ${wide ? "max-w-4xl" : "max-w-2xl"} my-auto bg-white rounded-2xl shadow-2xl flex flex-col max-h-[calc(100vh-2rem)]`}>
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-line">
+          <h2 className="font-display text-2xl text-ink">{title}</h2>
+          <button type="button" onClick={onClose} aria-label="Close" className="text-stone hover:text-ink text-2xl leading-none px-2">
+            ×
+          </button>
+        </div>
+        <div className="px-6 py-6 overflow-y-auto space-y-6">{children}</div>
+        {footer && <div className="px-6 py-4 border-t border-line flex flex-wrap items-center gap-4">{footer}</div>}
+      </div>
     </div>
   );
 }
