@@ -87,6 +87,8 @@ export interface SiteSettings {
     headline: string;
     subheadline: string;
     image: string;
+    /** Further backgrounds (pictures or videos) shown one after another after `image`. */
+    moreMedia: string[];
     ctaLabel: string;
     ctaHref: string;
     secondaryLabel: string;
@@ -128,6 +130,7 @@ export const defaultSettings: SiteSettings = {
     headline: siteConfig.tagline,
     subheadline: siteConfig.intro,
     image: "",
+    moreMedia: [],
     ctaLabel: "View my work",
     ctaHref: "/projects",
     secondaryLabel: "Read my writing",
@@ -341,6 +344,9 @@ export function mergeSettings(stored: unknown): SiteSettings {
       headline: str(hero.headline, d.hero.headline, 200),
       subheadline: opt(hero.subheadline, typeof legacy.intro === "string" ? legacy.intro : d.hero.subheadline, 600),
       image: image(hero.image, d.hero.image),
+      moreMedia: Array.isArray(hero.moreMedia)
+        ? hero.moreMedia.map((item) => image(item, "")).filter(Boolean).slice(0, 5)
+        : d.hero.moreMedia,
       ctaLabel: opt(hero.ctaLabel, d.hero.ctaLabel, 40),
       ctaHref: link(hero.ctaHref, d.hero.ctaHref),
       secondaryLabel: opt(hero.secondaryLabel, d.hero.secondaryLabel, 40),

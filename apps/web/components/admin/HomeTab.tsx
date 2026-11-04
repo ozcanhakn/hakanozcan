@@ -157,8 +157,42 @@ export default function HomeTab({ settings, onSave }: Props) {
   return (
     <div className="max-w-3xl space-y-8">
       <Card title="Top banner">
-        <ImageField label="Background image" value={hero.image} onChange={(image) => patchHero({ image })} />
-        <p className="text-xs text-stone -mt-2">A wide photo works best. Without an image the banner uses your accent color.</p>
+        <ImageField label="Background (image or video)" value={hero.image} onChange={(image) => patchHero({ image })} />
+        <p className="text-xs text-stone -mt-2">
+          A wide photo or a short MP4/WebM clip works best. Without one the banner uses your accent color.
+        </p>
+        {hero.moreMedia.map((src, index) => (
+          <div key={index} className="border-l-2 border-line pl-4">
+            <ImageField
+              label={`Background ${index + 2}`}
+              value={src}
+              onChange={(value) =>
+                patchHero({ moreMedia: hero.moreMedia.map((item, i) => (i === index ? value : item)) })
+              }
+            />
+            <button
+              type="button"
+              onClick={() => patchHero({ moreMedia: hero.moreMedia.filter((_, i) => i !== index) })}
+              className="mt-2 text-xs text-red-800 underline underline-offset-4"
+            >
+              Remove background {index + 2}
+            </button>
+          </div>
+        ))}
+        {hero.image && hero.moreMedia.length < 5 && (
+          <button
+            type="button"
+            onClick={() => patchHero({ moreMedia: [...hero.moreMedia, ""] })}
+            className="text-sm text-navy underline underline-offset-4"
+          >
+            + Add another background
+          </button>
+        )}
+        {hero.moreMedia.length > 0 && (
+          <p className="text-xs text-stone">
+            The backgrounds play one after another with a fade: a video plays to its end, a picture stays for 6 seconds. Empty ones are skipped when you save.
+          </p>
+        )}
         <TextField label="Small label" value={hero.eyebrow} max={60} onChange={(eyebrow) => patchHero({ eyebrow })} />
         <TextField label="Headline" rows={2} value={hero.headline} max={200} onChange={(headline) => patchHero({ headline })} />
         <TextField label="Introduction" rows={3} value={hero.subheadline} max={600} onChange={(subheadline) => patchHero({ subheadline })} />
