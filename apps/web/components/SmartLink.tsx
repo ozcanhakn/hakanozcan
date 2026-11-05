@@ -14,6 +14,9 @@ export default function SmartLink({
   children: ReactNode;
   onClick?: () => void;
   "aria-current"?: "page";
+  "aria-haspopup"?: "true";
+  "aria-expanded"?: boolean;
+  onFocus?: () => void;
 }) {
   if (href.startsWith("/") || href.startsWith("#")) {
     return (

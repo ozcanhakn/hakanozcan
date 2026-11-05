@@ -12,10 +12,21 @@ const PICTURE_SECONDS = 6;
  * a picture stays for a few seconds, then the next one fades in. After the last it starts over.
  * Only the visible clip plays; the others are paused so the page does not decode four videos at once.
  */
-export default function HeroBackground({ sources }: { sources: string[] }) {
-  const [active, setActive] = useState(0);
+export default function HeroBackground({
+  sources,
+  active: controlled,
+  onActiveChange,
+}: {
+  sources: string[];
+  /** Optional: let the parent own which background is showing (the hero does, so its text can follow). */
+  active?: number;
+  onActiveChange?: (index: number) => void;
+}) {
+  const [own, setOwn] = useState(0);
+  const active = controlled ?? own;
+  const setActive = onActiveChange ?? setOwn;
   const videos = useRef<(HTMLVideoElement | null)[]>([]);
-  const next = () => setActive((index) => (index + 1) % sources.length);
+  const next = () => setActive((active + 1) % sources.length);
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

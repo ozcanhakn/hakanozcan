@@ -20,6 +20,22 @@ interface Props {
   onSave: (next: SiteSettings) => Promise<string | null>;
 }
 
+/** “Show the banner text while this background plays”. Unchecked backgrounds play with the text faded out. */
+function HeroTextToggle({ src, hidden, onChange }: { src: string; hidden: string[]; onChange: (next: string[]) => void }) {
+  const shown = !hidden.includes(src);
+  return (
+    <label className="flex items-center gap-3 text-sm text-ink cursor-pointer">
+      <input
+        type="checkbox"
+        checked={shown}
+        onChange={(e) => onChange(e.target.checked ? hidden.filter((item) => item !== src) : [...hidden, src])}
+        className="h-4 w-4 accent-[var(--color-navy,#0b6e99)]"
+      />
+      Show the headline and buttons while this background plays
+    </label>
+  );
+}
+
 export default function HomeTab({ settings, onSave }: Props) {
   const [hero, setHero] = useState(settings.hero);
   const [order, setOrder] = useState(settings.order);
@@ -36,6 +52,13 @@ export default function HomeTab({ settings, onSave }: Props) {
     const error = await onSave({ ...settings, hero, order, blocks });
     setStatus(error ? { kind: "error", text: error } : { kind: "ok", text: "Saved. The home page updates within a minute." });
     setIsSaving(false);
+  };
+
+  /** When a background's address changes, its “text hidden” choice follows it. */
+  const renameHidden = (from: string, to: string) => {
+    if (!from || from === to || !hero.textHidden.includes(from)) return hero.textHidden;
+    const rest = hero.textHidden.filter((item) => item !== from);
+    return to ? [...rest, to] : rest;
   };
 
   const updateTile = (index: number, patch: Partial<(typeof blocks.tiles.items)[number]>) =>
@@ -198,23 +221,37 @@ export default function HomeTab({ settings, onSave }: Props) {
   return (
     <div className="max-w-3xl space-y-8">
       <Card title="Top banner">
-        <ImageField label="Background (image or video)" value={hero.image} onChange={(image) => patchHero({ image })} />
+        <ImageField
+          label="Background (image or video)"
+          value={hero.image}
+          onChange={(image) => patchHero({ image, textHidden: renameHidden(hero.image, image) })}
+        />
         <p className="text-xs text-stone -mt-2">
           A wide photo or a short MP4/WebM clip works best. Without one the banner uses your accent color.
         </p>
+        {hero.image && <HeroTextToggle src={hero.image} hidden={hero.textHidden} onChange={(textHidden) => patchHero({ textHidden })} />}
         {hero.moreMedia.map((src, index) => (
-          <div key={index} className="border-l-2 border-line pl-4">
+          <div key={index} className="border-l-2 border-line pl-4 space-y-3">
             <ImageField
               label={`Background ${index + 2}`}
               value={src}
               onChange={(value) =>
-                patchHero({ moreMedia: hero.moreMedia.map((item, i) => (i === index ? value : item)) })
+                patchHero({
+                  moreMedia: hero.moreMedia.map((item, i) => (i === index ? value : item)),
+                  textHidden: renameHidden(src, value),
+                })
               }
             />
+            {src && <HeroTextToggle src={src} hidden={hero.textHidden} onChange={(textHidden) => patchHero({ textHidden })} />}
             <button
               type="button"
-              onClick={() => patchHero({ moreMedia: hero.moreMedia.filter((_, i) => i !== index) })}
-              className="mt-2 text-xs text-red-800 underline underline-offset-4"
+              onClick={() =>
+                patchHero({
+                  moreMedia: hero.moreMedia.filter((_, i) => i !== index),
+                  textHidden: hero.textHidden.filter((item) => item !== src || hero.image === src || hero.moreMedia.some((other, i) => i !== index && other === src)),
+                })
+              }
+              className="text-xs text-red-800 underline underline-offset-4"
             >
               Remove background {index + 2}
             </button>

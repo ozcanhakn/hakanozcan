@@ -1,5 +1,4 @@
-import HeroBackground from "@/components/home/HeroBackground";
-import SiteImage from "@/components/SiteImage";
+import HeroStage from "@/components/home/HeroStage";
 import SmartLink from "@/components/SmartLink";
 import type { SiteSettings } from "@/lib/settings";
 
@@ -9,23 +8,14 @@ export default function Hero({ hero }: { hero: SiteSettings["hero"] }) {
 
   return (
     <section id="about" className="relative isolate scroll-mt-20 bg-ink text-white overflow-hidden">
-      {backgrounds.length > 0 ? (
-        <>
-          {backgrounds.length === 1 ? (
-            <SiteImage src={backgrounds[0]!} priority className="absolute inset-0 -z-20 h-full w-full object-cover" />
-          ) : (
-            <HeroBackground sources={backgrounds} />
-          )}
-          <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
-        </>
-      ) : (
+      {backgrounds.length === 0 && (
         <>
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,var(--site-accent),transparent_62%)] opacity-80" />
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom_left,var(--site-accent),transparent_55%)] opacity-40" />
         </>
       )}
 
-      <div className="max-w-6xl mx-auto px-6 lg:px-10 min-h-[78vh] md:min-h-[88vh] flex flex-col justify-end pb-14 md:pb-24 pt-36">
+      <HeroStage sources={backgrounds} textHidden={hero.textHidden}>
         {hero.eyebrow && (
           <p className="text-[11px] md:text-xs font-bold tracking-[0.2em] uppercase text-white/80 mb-5">{hero.eyebrow}</p>
         )}
@@ -56,7 +46,7 @@ export default function Hero({ hero }: { hero: SiteSettings["hero"] }) {
             )}
           </div>
         )}
-      </div>
+      </HeroStage>
     </section>
   );
 }

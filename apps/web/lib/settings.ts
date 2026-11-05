@@ -55,6 +55,33 @@ export interface NavLink {
   href: string;
 }
 
+/** A top menu entry. With sub-links it opens a panel under the bar when hovered, like Gates Notes. */
+export interface NavItem extends NavLink {
+  /** Heading inside the panel. Empty falls back to “Explore {label}”. */
+  panelTitle: string;
+  /** Sub-links listed in the panel. Empty means no panel. */
+  children: NavLink[];
+  /** Optional picture card on the right side of the panel. */
+  cardImage: string;
+  cardTitle: string;
+  cardHref: string;
+  /** Optional button at the bottom of the panel. */
+  buttonLabel: string;
+  buttonHref: string;
+}
+
+export const navItem = (label: string, href: string): NavItem => ({
+  label,
+  href,
+  panelTitle: "",
+  children: [],
+  cardImage: "",
+  cardTitle: "",
+  cardHref: "",
+  buttonLabel: "",
+  buttonHref: "",
+});
+
 export interface Tile {
   title: string;
   body: string;
@@ -81,7 +108,7 @@ export interface FooterColumn {
 
 export interface SiteSettings {
   brand: { name: string; accent: string };
-  nav: { links: NavLink[]; ctaLabel: string; ctaHref: string };
+  nav: { links: NavItem[]; ctaLabel: string; ctaHref: string };
   hero: {
     eyebrow: string;
     headline: string;
@@ -89,6 +116,8 @@ export interface SiteSettings {
     image: string;
     /** Further backgrounds (pictures or videos) shown one after another after `image`. */
     moreMedia: string[];
+    /** Backgrounds (by address) that play with the hero text hidden. The text fades back in on the others. */
+    textHidden: string[];
     ctaLabel: string;
     ctaHref: string;
     secondaryLabel: string;
@@ -120,12 +149,7 @@ export const DEFAULT_ACCENT = "#0b6e99";
 export const defaultSettings: SiteSettings = {
   brand: { name: siteConfig.name, accent: DEFAULT_ACCENT },
   nav: {
-    links: [
-      { label: "Work", href: "/projects" },
-      { label: "About", href: "/#about" },
-      { label: "Books", href: "/books" },
-      { label: "Writing", href: "/blog" },
-    ],
+    links: [navItem("Work", "/projects"), navItem("About", "/#about"), navItem("Books", "/books"), navItem("Writing", "/blog")],
     ctaLabel: "Contact",
     ctaHref: "/contact",
   },
@@ -135,6 +159,7 @@ export const defaultSettings: SiteSettings = {
     subheadline: siteConfig.intro,
     image: "",
     moreMedia: [],
+    textHidden: [],
     ctaLabel: "View my work",
     ctaHref: "/projects",
     secondaryLabel: "Read my writing",
@@ -296,6 +321,25 @@ const navLink = (item: Record<string, unknown>): NavLink | null => {
   return label && href ? { label, href } : null;
 };
 
+/** A menu entry may have no address of its own when it only opens a panel, but then it needs sub-links. */
+const menuItem = (item: Record<string, unknown>): NavItem | null => {
+  const label = opt(item.label, "", 60);
+  const href = link(item.href, "");
+  const children = list(item.children, [], 12, navLink);
+  if (!label || (!href && children.length === 0)) return null;
+  return {
+    label,
+    href,
+    panelTitle: opt(item.panelTitle, "", 80),
+    children,
+    cardImage: image(item.cardImage, ""),
+    cardTitle: opt(item.cardTitle, "", 80),
+    cardHref: link(item.cardHref, ""),
+    buttonLabel: opt(item.buttonLabel, "", 40),
+    buttonHref: link(item.buttonHref, ""),
+  };
+};
+
 const slugId = (value: string) =>
   value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "project";
 
@@ -344,7 +388,7 @@ export function mergeSettings(stored: unknown): SiteSettings {
       accent: typeof brand.accent === "string" && /^#[0-9a-f]{6}$/i.test(brand.accent) ? brand.accent : d.brand.accent,
     },
     nav: {
-      links: list(nav.links, d.nav.links, 8, navLink),
+      links: list(nav.links, d.nav.links, 8, menuItem),
       ctaLabel: opt(nav.ctaLabel, d.nav.ctaLabel, 40),
       ctaHref: link(nav.ctaHref, d.nav.ctaHref),
     },
@@ -356,6 +400,9 @@ export function mergeSettings(stored: unknown): SiteSettings {
       moreMedia: Array.isArray(hero.moreMedia)
         ? hero.moreMedia.map((item) => image(item, "")).filter(Boolean).slice(0, 9)
         : d.hero.moreMedia,
+      textHidden: Array.isArray(hero.textHidden)
+        ? hero.textHidden.map((item) => image(item, "")).filter(Boolean).slice(0, 10)
+        : d.hero.textHidden,
       ctaLabel: opt(hero.ctaLabel, d.hero.ctaLabel, 40),
       ctaHref: link(hero.ctaHref, d.hero.ctaHref),
       secondaryLabel: opt(hero.secondaryLabel, d.hero.secondaryLabel, 40),

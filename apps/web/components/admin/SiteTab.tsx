@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Card, LinksEditor, MediaListField, MoveButtons, SaveBar, TextField, moveItem } from "@/components/admin/fields";
+import NavItemsEditor from "@/components/admin/NavItemsEditor";
 import { labelClass, type Status } from "@/components/admin/ui";
 import { DEFAULT_ACCENT, type SiteSettings } from "@/lib/settings";
 
@@ -53,7 +54,7 @@ export default function SiteTab({ settings, onSave }: Props) {
       </Card>
 
       <Card title="Top menu">
-        <LinksEditor links={nav.links} onChange={(links) => setNav({ ...nav, links })} />
+        <NavItemsEditor items={nav.links} onChange={(links) => setNav({ ...nav, links })} />
         <div className="grid md:grid-cols-2 gap-6">
           <TextField label="Button text (top right)" value={nav.ctaLabel} max={40} hint="Leave empty to hide the button." onChange={(ctaLabel) => setNav({ ...nav, ctaLabel })} />
           <TextField label="Button link" value={nav.ctaHref} max={500} onChange={(ctaHref) => setNav({ ...nav, ctaHref })} />
