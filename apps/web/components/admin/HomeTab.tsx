@@ -50,6 +50,40 @@ export default function HomeTab({ settings, onSave }: Props) {
         </div>
         <TextField label="Introduction" rows={3} value={blocks.tiles.intro} max={600} onChange={(intro) => patchBlock("tiles", { intro })} />
 
+        <div className="grid md:grid-cols-2 gap-6">
+          <label className="block">
+            <span className="block text-xs tracking-[0.2em] uppercase text-stone mb-1">Columns (wide screens)</span>
+            <select
+              value={blocks.tiles.columns}
+              onChange={(e) => patchBlock("tiles", { columns: Number(e.target.value) })}
+              className="w-full bg-transparent border-b border-ink/30 py-2.5 text-[17px] text-ink outline-none"
+            >
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="block text-xs tracking-[0.2em] uppercase text-stone mb-1">Rows</span>
+            <select
+              value={blocks.tiles.rows}
+              onChange={(e) => patchBlock("tiles", { rows: Number(e.target.value) })}
+              className="w-full bg-transparent border-b border-ink/30 py-2.5 text-[17px] text-ink outline-none"
+            >
+              <option value={0}>Automatic (show every card)</option>
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <p className="text-xs text-stone">
+          {blocks.tiles.rows > 0
+            ? `The grid shows up to ${blocks.tiles.columns * blocks.tiles.rows} cards (${blocks.tiles.columns} × ${blocks.tiles.rows}); the first ones in the list, in order. You have ${blocks.tiles.items.length}.`
+            : `${blocks.tiles.columns} per row; new rows are added as needed for your ${blocks.tiles.items.length} cards.`}{" "}
+          Phones always show one card per row.
+        </p>
+
         <div className="space-y-4">
           {blocks.tiles.items.map((tile, index) => (
             <div key={index} className="border border-line bg-cream-deep/60 p-4 space-y-4">
@@ -76,7 +110,7 @@ export default function HomeTab({ settings, onSave }: Props) {
               <TextField label="Link (optional)" value={tile.href} max={500} placeholder="/projects" onChange={(href) => updateTile(index, { href })} />
             </div>
           ))}
-          {blocks.tiles.items.length < 8 && (
+          {blocks.tiles.items.length < 24 && (
             <button
               type="button"
               onClick={() => patchBlock("tiles", { items: [...blocks.tiles.items, { title: "", body: "", image: "", href: "" }] })}

@@ -2,8 +2,21 @@ import SiteImage from "@/components/SiteImage";
 import SmartLink from "@/components/SmartLink";
 import type { SiteSettings } from "@/lib/settings";
 
+// Full class names so Tailwind can see them. Phones always get one column; tablets get two (or one if fewer are asked for).
+const GRID: Record<number, string> = {
+  1: "grid-cols-1",
+  2: "grid-cols-1 sm:grid-cols-2",
+  3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+  4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+  5: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-5",
+  6: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6",
+};
+
 export default function Tiles({ block }: { block: SiteSettings["blocks"]["tiles"] }) {
-  if (block.items.length === 0) return null;
+  const columns = Math.min(6, Math.max(1, block.columns));
+  // `rows` of 0 means “as many rows as it takes”.
+  const items = block.rows > 0 ? block.items.slice(0, columns * block.rows) : block.items;
+  if (items.length === 0) return null;
 
   return (
     <section id="expertise" className="scroll-mt-24 border-b border-line">
@@ -16,8 +29,8 @@ export default function Tiles({ block }: { block: SiteSettings["blocks"]["tiles"
           {block.intro && <p className="mt-6 text-[18px] leading-[1.6] text-stone">{block.intro}</p>}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {block.items.map((tile, index) => {
+        <div className={`grid ${GRID[columns]} gap-4`}>
+          {items.map((tile, index) => {
             const card = (
               <>
                 {tile.image ? (

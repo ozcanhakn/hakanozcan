@@ -97,7 +97,8 @@ export interface SiteSettings {
   /** Order of the blocks under the hero on the home page. */
   order: BlockId[];
   blocks: {
-    tiles: { enabled: boolean; eyebrow: string; title: string; intro: string; items: Tile[] };
+    /** `columns` is the card count per row on wide screens (1-6). `rows` caps the grid height: 0 shows every card. */
+    tiles: { enabled: boolean; eyebrow: string; title: string; intro: string; columns: number; rows: number; items: Tile[] };
     books: { enabled: boolean; eyebrow: string; title: string; count: number; linkLabel: string };
     writing: { enabled: boolean; eyebrow: string; title: string; count: number; linkLabel: string };
     project: { enabled: boolean; eyebrow: string; title: string };
@@ -146,6 +147,8 @@ export const defaultSettings: SiteSettings = {
       eyebrow: "Explore",
       title: "What I work on",
       intro: siteConfig.approach,
+      columns: 4,
+      rows: 0,
       items: siteConfig.focusAreas.map((area) => ({ ...area, image: "", href: "/projects" })),
     },
     books: { enabled: true, eyebrow: "Books", title: "The books on my bookshelf", count: 3, linkLabel: "Explore books" },
@@ -365,7 +368,9 @@ export function mergeSettings(stored: unknown): SiteSettings {
         eyebrow: opt(tiles.eyebrow, d.blocks.tiles.eyebrow, 60),
         title: str(tiles.title, d.blocks.tiles.title, 120),
         intro: opt(tiles.intro, typeof legacy.approach === "string" ? legacy.approach : d.blocks.tiles.intro, 600),
-        items: list(tiles.items, legacyAreas.length > 0 ? legacyAreas : d.blocks.tiles.items, 8, (item) => {
+        columns: typeof tiles.columns === "number" ? Math.min(6, Math.max(1, Math.round(tiles.columns))) : d.blocks.tiles.columns,
+        rows: typeof tiles.rows === "number" ? Math.min(6, Math.max(0, Math.round(tiles.rows))) : d.blocks.tiles.rows,
+        items: list(tiles.items, legacyAreas.length > 0 ? legacyAreas : d.blocks.tiles.items, 24, (item) => {
           const title = opt(item.title, "", 80);
           return title ? { title, body: opt(item.body, "", 400), image: image(item.image, ""), href: link(item.href, "") } : null;
         }),
