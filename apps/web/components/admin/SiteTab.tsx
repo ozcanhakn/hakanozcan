@@ -68,6 +68,55 @@ export default function SiteTab({ settings, onSave }: Props) {
         <MediaListField label="Background" value={contact.media} onChange={(media) => setContact({ media })} />
       </Card>
 
+      <Card title="Footer background">
+        <p className="text-xs text-stone">
+          Pick a color, a picture or MP4/WebM video, or both: the color shows while the media loads and behind it. Leave both empty for the default dark footer.
+        </p>
+        <div>
+          <span className={labelClass}>Color (optional)</span>
+          <div className="flex items-center gap-4">
+            <input
+              type="color"
+              aria-label="Footer color"
+              value={footer.background.color || "#17181b"}
+              onChange={(e) => setFooter({ ...footer, background: { ...footer.background, color: e.target.value } })}
+              className="h-10 w-14 cursor-pointer border border-line bg-transparent p-0.5"
+            />
+            <code className="font-mono text-sm text-ink">{footer.background.color || "default"}</code>
+            {footer.background.color && (
+              <button
+                type="button"
+                onClick={() => setFooter({ ...footer, background: { ...footer.background, color: "" } })}
+                className="text-xs text-stone underline underline-offset-4"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-stone mt-2">On a light color the footer text turns dark by itself.</p>
+        </div>
+        <MediaListField
+          label="Picture or video"
+          value={footer.background.media}
+          onChange={(media) => setFooter({ ...footer, background: { ...footer.background, media } })}
+        />
+        {footer.background.media.length > 0 && (
+          <label className="block">
+            <span className={labelClass}>Darken the picture or video: {footer.background.shade}%</span>
+            <input
+              type="range"
+              min={0}
+              max={80}
+              step={5}
+              value={footer.background.shade}
+              onChange={(e) => setFooter({ ...footer, background: { ...footer.background, shade: Number(e.target.value) } })}
+              className="w-full accent-[var(--site-accent,#0b6e99)]"
+            />
+            <span className="block text-xs text-stone mt-1">Footer text stays white over media, so a little darkening keeps it readable.</span>
+          </label>
+        )}
+      </Card>
+
       <Card title="Footer">
         {footer.columns.map((column, index) => (
           <div key={index} className="border border-line bg-cream-deep/60 p-4 space-y-4">
