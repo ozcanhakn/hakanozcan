@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import SearchButton from "@/components/SearchButton";
 import SiteImage from "@/components/SiteImage";
 import SmartLink from "@/components/SmartLink";
-import type { NavItem, SiteSettings } from "@/lib/settings";
+import { hasPanel as itemHasPanel, type NavItem, type SiteSettings } from "@/lib/settings";
 
 interface Props {
   brand: SiteSettings["brand"];
@@ -84,7 +84,7 @@ export default function Navbar({ brand, nav }: Props) {
 
             <nav className="hidden md:flex flex-1 items-stretch justify-end gap-8 px-6" aria-label="Main">
               {nav.links.map((link, index) => {
-                const hasPanel = link.children.length > 0;
+                const hasPanel = itemHasPanel(link);
                 const showing = panel === index;
                 const active = isActive(link.href);
                 const cls = `${linkClass} relative flex items-center ${
@@ -145,7 +145,7 @@ export default function Navbar({ brand, nav }: Props) {
           </div>
 
           {/* The panel under the bar. Its top padding bridges the gap so the pointer never leaves the menu area. */}
-          {current && current.children.length > 0 && (
+          {current && itemHasPanel(current) && (
             <div className="hidden md:block absolute left-0 right-0 top-full pt-2" onMouseEnter={() => openPanel(panel!)}>
               <div
                 className="rounded-xl border border-white/70 shadow-2xl shadow-black/15 backdrop-blur-xl p-8 lg:p-10 grid grid-cols-12 gap-8 text-ink"
@@ -158,19 +158,21 @@ export default function Navbar({ brand, nav }: Props) {
                 <div className={current.cardImage || current.cardTitle ? "col-span-7" : "col-span-12"}>
                   <p className="font-head text-2xl font-bold tracking-tight">{current.panelTitle || `Explore ${current.label.toLowerCase()}`}</p>
                   <div className="mt-4 mb-6 h-px w-14 bg-ink/25" />
-                  <ul className="grid grid-cols-2 gap-x-10 gap-y-3">
-                    {current.children.map((child, i) => (
-                      <li key={`${child.label}-${i}`}>
-                        <SmartLink
-                          href={child.href}
-                          onClick={() => setPanel(null)}
-                          className="font-head text-xl font-bold leading-snug text-ink hover:text-[var(--site-accent,#0b6e99)] transition-colors"
-                        >
-                          {child.label}
-                        </SmartLink>
-                      </li>
-                    ))}
-                  </ul>
+                  {current.children.length > 0 && (
+                    <ul className="grid grid-cols-2 gap-x-10 gap-y-3">
+                      {current.children.map((child, i) => (
+                        <li key={`${child.label}-${i}`}>
+                          <SmartLink
+                            href={child.href}
+                            onClick={() => setPanel(null)}
+                            className="font-head text-xl font-bold leading-snug text-ink hover:text-[var(--site-accent,#0b6e99)] transition-colors"
+                          >
+                            {child.label}
+                          </SmartLink>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   {current.buttonLabel && current.buttonHref && (
                     <SmartLink
                       href={current.buttonHref}

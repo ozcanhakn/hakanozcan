@@ -38,7 +38,7 @@ export default function NavItemsEditor({ items, onChange, max = 8 }: Props) {
             </summary>
             <div className="mt-4 space-y-5">
               <p className="text-xs text-stone">
-                Add sub-links and a colored panel opens under the menu when someone points at “{item.label || "this item"}”. With no sub-links there is no panel.
+                A colored panel opens under the menu when someone points at “{item.label || "this item"}”. It shows whatever you fill in below: sub-links, a button, a picture card. With none of them there is no panel. Each sub-link needs a text and an address starting with / or https://.
               </p>
               <TextField
                 label="Panel heading"

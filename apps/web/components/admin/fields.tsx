@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { areaClass, fieldClass, labelClass, primaryButton, type Status } from "@/components/admin/ui";
 import SiteImage from "@/components/SiteImage";
-import type { NavLink } from "@/lib/settings";
+import { isSafeLink, type NavLink } from "@/lib/settings";
 
 interface TextProps {
   label: string;
@@ -195,20 +195,36 @@ export function LinksEditor({ links, onChange, max = 8 }: { links: NavLink[]; on
 
   return (
     <div className="space-y-3">
-      {links.map((link, index) => (
-        <div key={index} className="flex flex-wrap items-end gap-3">
-          <div className="flex-1 min-w-[8rem]">
-            <input aria-label="Link text" placeholder="Text" maxLength={60} value={link.label} onChange={(e) => update(index, { label: e.target.value })} className={fieldClass} />
+      {links.map((link, index) => {
+        // A link needs both a text and a working address, or it is dropped when you save.
+        const started = link.label.trim() !== "" || link.href.trim() !== "";
+        const problem = !started
+          ? null
+          : link.label.trim() === ""
+            ? "Add the link text, or it is dropped when you save."
+            : link.href.trim() === ""
+              ? "Add an address (like /books), or this link is dropped when you save."
+              : isSafeLink(link.href)
+                ? null
+                : "The address must start with / or https:// (or #, mailto:), or this link is dropped when you save.";
+        return (
+          <div key={index}>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="flex-1 min-w-[8rem]">
+                <input aria-label="Link text" placeholder="Text" maxLength={60} value={link.label} onChange={(e) => update(index, { label: e.target.value })} className={fieldClass} />
+              </div>
+              <div className="flex-[2] min-w-[12rem]">
+                <input aria-label="Link address" placeholder="/page or https://…" maxLength={500} value={link.href} onChange={(e) => update(index, { href: e.target.value })} className={fieldClass} />
+              </div>
+              <MoveButtons index={index} length={links.length} onMove={(from, to) => onChange(moveItem(links, from, to))} />
+              <button type="button" onClick={() => onChange(links.filter((_, i) => i !== index))} className="text-xs text-red-800 underline underline-offset-4 pb-2">
+                Remove
+              </button>
+            </div>
+            {problem && <p role="alert" className="mt-1 text-xs text-red-800">{problem}</p>}
           </div>
-          <div className="flex-[2] min-w-[12rem]">
-            <input aria-label="Link address" placeholder="/page or https://…" maxLength={500} value={link.href} onChange={(e) => update(index, { href: e.target.value })} className={fieldClass} />
-          </div>
-          <MoveButtons index={index} length={links.length} onMove={(from, to) => onChange(moveItem(links, from, to))} />
-          <button type="button" onClick={() => onChange(links.filter((_, i) => i !== index))} className="text-xs text-red-800 underline underline-offset-4 pb-2">
-            Remove
-          </button>
-        </div>
-      ))}
+        );
+      })}
       {links.length < max && (
         <button type="button" onClick={() => onChange([...links, { label: "", href: "" }])} className="text-sm text-navy underline underline-offset-4">
           Add a link

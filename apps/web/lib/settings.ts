@@ -296,6 +296,13 @@ const flag = (value: unknown, fallback: boolean) => (typeof value === "boolean" 
 const LINK_PATTERN = /^(\/(?!\/)\S*|#\S*|https?:\/\/\S+|mailto:\S+)$/i;
 const IMAGE_PATTERN = /^(\/(?!\/)\S*|https:\/\/\S+)$/i;
 
+/** True when an address would survive saving: a same-site path, #anchor, http(s) link or mailto:. */
+export const isSafeLink = (value: string) => LINK_PATTERN.test(value.trim());
+
+/** A menu entry opens a panel when it has sub-links, a button or a picture card. */
+export const hasPanel = (item: Pick<NavItem, "children" | "buttonLabel" | "buttonHref" | "cardImage" | "cardTitle">) =>
+  item.children.length > 0 || Boolean(item.buttonLabel && item.buttonHref) || Boolean(item.cardImage || item.cardTitle);
+
 /** Only same-site paths, http(s) links and mailto: are accepted, so a saved value can never be a script URL. */
 const link = (value: unknown, fallback: string) => {
   if (typeof value !== "string") return fallback;
@@ -326,8 +333,8 @@ const menuItem = (item: Record<string, unknown>): NavItem | null => {
   const label = opt(item.label, "", 60);
   const href = link(item.href, "");
   const children = list(item.children, [], 12, navLink);
-  if (!label || (!href && children.length === 0)) return null;
-  return {
+  if (!label) return null;
+  const entry: NavItem = {
     label,
     href,
     panelTitle: opt(item.panelTitle, "", 80),
@@ -338,6 +345,8 @@ const menuItem = (item: Record<string, unknown>): NavItem | null => {
     buttonLabel: opt(item.buttonLabel, "", 40),
     buttonHref: link(item.buttonHref, ""),
   };
+  // With neither an address nor a panel there is nothing to click.
+  return href || hasPanel(entry) ? entry : null;
 };
 
 const slugId = (value: string) =>
