@@ -89,6 +89,59 @@ export interface Tile {
   href: string;
 }
 
+/** The shape a scene's picture or video is cut into. */
+export type SceneShape = "rect" | "diagonal" | "chevron" | "reverse";
+export const SCENE_SHAPES: { value: SceneShape; label: string }[] = [
+  { value: "rect", label: "Rectangle" },
+  { value: "diagonal", label: "Slanted band" },
+  { value: "chevron", label: "Chevron (V)" },
+  { value: "reverse", label: "Slanted band, other way" },
+];
+
+/** A big scroll scene on a project page: a heading with a shaped picture or video under it. */
+export interface ProjectScene {
+  title: string;
+  label: string;
+  media: string;
+  shape: SceneShape;
+}
+
+/** A feature row: big title on the left, text and a picture or video on the right. */
+export interface ProjectFeature {
+  title: string;
+  body: string;
+  /** Extra text behind the DETAILS button. Empty hides the button. */
+  details: string;
+  media: string;
+}
+
+/** The content of a project's own page (/projects/{id}). */
+export interface ProjectDetail {
+  /** When on, the project cards open this page instead of the project link. */
+  enabled: boolean;
+  /** Background for the opening screen (picture or video). Empty uses the project image. */
+  heroMedia: string;
+  introTitle: string;
+  introSubtitle: string;
+  scenes: ProjectScene[];
+  features: ProjectFeature[];
+  ctaText: string;
+  ctaLabel: string;
+  ctaHref: string;
+}
+
+export const emptyDetail = (): ProjectDetail => ({
+  enabled: false,
+  heroMedia: "",
+  introTitle: "",
+  introSubtitle: "",
+  scenes: [],
+  features: [],
+  ctaText: "",
+  ctaLabel: "",
+  ctaHref: "",
+});
+
 export interface Project {
   id: string;
   title: string;
@@ -99,7 +152,12 @@ export interface Project {
   tags: string[];
   href: string;
   featured: boolean;
+  detail: ProjectDetail;
 }
+
+/** Where a project card should lead: its own page when it has one, otherwise its link. */
+export const projectLink = (project: Pick<Project, "id" | "href" | "detail">) =>
+  project.detail.enabled ? `/projects/${project.id}` : project.href;
 
 export interface FooterColumn {
   title: string;
@@ -211,6 +269,7 @@ export const defaultSettings: SiteSettings = {
     tags: [...project.tags],
     href: project.href ?? "",
     featured: Boolean(project.featured),
+    detail: emptyDetail(),
   })),
   // Sample entries so the Books section is visible on a fresh install. Replace them in the admin panel.
   books: {
@@ -360,6 +419,50 @@ const menuItem = (item: Record<string, unknown>): NavItem | null => {
 const slugId = (value: string) =>
   value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "project";
 
+/** Reads a project's page content; anything missing or unsafe falls back to empty. */
+function projectDetail(value: unknown): ProjectDetail {
+  const d = isRecord(value) ? value : {};
+  const shapes = SCENE_SHAPES.map((s) => s.value);
+  return {
+    enabled: d.enabled === true,
+    heroMedia: image(d.heroMedia, ""),
+    introTitle: opt(d.introTitle, "", 200),
+    introSubtitle: opt(d.introSubtitle, "", 300),
+    scenes: list(d.scenes, [], 6, (scene): ProjectScene | null => {
+      const title = opt(scene.title, "", 160);
+      const media = image(scene.media, "");
+      if (!title && !media) return null;
+      return {
+        title,
+        label: opt(scene.label, "", 200),
+        media,
+        shape: shapes.includes(scene.shape as SceneShape) ? (scene.shape as SceneShape) : "rect",
+      };
+    }),
+    features: list(d.features, [], 6, (feature): ProjectFeature | null => {
+      const title = opt(feature.title, "", 120);
+      const body = opt(feature.body, "", 1200);
+      const media = image(feature.media, "");
+      if (!title && !body && !media) return null;
+      return { title, body, details: opt(feature.details, "", 2000), media };
+    }),
+    ctaText: opt(d.ctaText, "", 240),
+    ctaLabel: opt(d.ctaLabel, "", 40),
+    ctaHref: link(d.ctaHref, ""),
+  };
+}
+
+/** Project ids become page addresses, so two projects must never share one. */
+function uniqueIds(projects: Project[]): Project[] {
+  const seen = new Set<string>();
+  return projects.map((project) => {
+    let id = project.id;
+    for (let n = 2; seen.has(id); n++) id = `${project.id}-${n}`.slice(0, 60);
+    seen.add(id);
+    return id === project.id ? project : { ...project, id };
+  });
+}
+
 /** Merges whatever is stored with the defaults, so a missing or partial row never breaks the site. */
 export function mergeSettings(stored: unknown): SiteSettings {
   const d = defaultSettings;
@@ -476,11 +579,12 @@ export function mergeSettings(stored: unknown): SiteSettings {
           : d.blocks.cta.media,
       },
     },
-    projects: list(stored.projects, d.projects, 30, (item) => {
+    projects: uniqueIds(list(stored.projects, d.projects, 30, (item) => {
       const title = opt(item.title, "", 120);
       if (!title) return null;
       return {
-        id: opt(item.id, "", 60) || slugId(title),
+        id: slugId(opt(item.id, "", 60) || title),
+        detail: projectDetail(item.detail),
         title,
         type: opt(item.type, "", 80),
         status: opt(item.status, "", 40),
@@ -492,7 +596,7 @@ export function mergeSettings(stored: unknown): SiteSettings {
         href: link(item.href, ""),
         featured: item.featured === true,
       };
-    }),
+    })),
     books: {
       page: {
         title: str(booksPage.title, d.books.page.title, 120),

@@ -3,8 +3,9 @@
 import { useState } from "react";
 
 import { Card, ImageField, MoveButtons, SaveBar, TextField, Toggle, moveItem } from "@/components/admin/fields";
+import ProjectDetailEditor from "@/components/admin/ProjectDetailEditor";
 import { type Status } from "@/components/admin/ui";
-import type { Project, SiteSettings } from "@/lib/settings";
+import { emptyDetail, type Project, type SiteSettings } from "@/lib/settings";
 
 const emptyProject = (): Project => ({
   id: `project-${Date.now().toString(36)}`,
@@ -16,6 +17,7 @@ const emptyProject = (): Project => ({
   tags: [],
   href: "",
   featured: false,
+  detail: emptyDetail(),
 });
 
 interface Props {
@@ -91,6 +93,7 @@ export default function ProjectsTab({ settings, onSave }: Props) {
           />
           <TextField label="Project link" value={project.href} max={500} placeholder="https://…" onChange={(href) => update(index, { href })} />
           <Toggle label="Featured on the home page" checked={project.featured} onChange={(featured) => update(index, { featured })} />
+          <ProjectDetailEditor projectId={project.id} detail={project.detail} onChange={(detail) => update(index, { detail })} />
         </Card>
       ))}
 
