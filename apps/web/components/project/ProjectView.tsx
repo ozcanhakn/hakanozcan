@@ -55,7 +55,7 @@ export default function ProjectView({ project }: { project: Project }) {
 
         {detail.features.length > 0 && (
           <section className="bg-white text-[#0e1114]">
-            <div className="mx-auto max-w-7xl px-5 md:px-10">
+            <div className="mx-auto max-w-[1600px] px-5 md:px-10 lg:px-16">
               {detail.features.map((feature, index) => (
                 <FeatureRow key={index} feature={feature} />
               ))}

@@ -35,7 +35,7 @@ export default function Scene({ scene, id }: { scene: ProjectScene; id: string }
       {scene.media && (
         <motion.div
           style={{ clipPath: CLIPS[scene.shape], y: reduced ? 0 : y }}
-          className="mx-auto mt-14 md:mt-20 aspect-video w-full max-w-5xl overflow-hidden bg-[#161a1e]"
+          className="mx-auto mt-14 md:mt-20 aspect-video w-full max-w-[1500px] overflow-hidden bg-[#161a1e]"
         >
           <SiteImage src={scene.media} alt={scene.title} className="h-full w-full object-cover" />
         </motion.div>

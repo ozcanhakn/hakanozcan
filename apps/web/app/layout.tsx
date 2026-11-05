@@ -7,6 +7,7 @@ import "@workspace/ui/globals.css";
 
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import PageFrame from "@/components/PageFrame";
 import { siteConfig } from "@/content/site";
 import { getSiteSettings } from "@/lib/settings";
 
@@ -59,13 +60,13 @@ export default async function RootLayout({
       >
         <Providers>
           {/* Gray page with a white column in the middle, like Gates Notes. */}
-          <div className="max-w-[1500px] mx-auto bg-white min-h-screen flex flex-col">
+          <PageFrame>
             <Navbar brand={settings.brand} nav={settings.nav} />
             <main className="flex-1">
               {children}
             </main>
             <Footer brand={settings.brand} footer={settings.footer} />
-          </div>
+          </PageFrame>
         </Providers>
       </body>
     </html>
