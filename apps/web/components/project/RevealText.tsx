@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { Fragment } from "react";
 
 interface Props {
   text: string;
@@ -27,7 +28,7 @@ export default function RevealText({ text, className, style, as = "h2", by = "wo
   if (reduced) {
     const Plain = as;
     return (
-      <Plain className={className} style={style}>
+      <Plain className={className} style={{ whiteSpace: "pre-line", ...style }}>
         {text}
       </Plain>
     );
@@ -42,7 +43,11 @@ export default function RevealText({ text, className, style, as = "h2", by = "wo
     shown: { y: "0%", opacity: 1, transition: { duration: 0.95, ease: EASE } },
   };
 
-  const words = text.split(/\s+/).filter(Boolean);
+  // Line breaks typed in the admin are kept: each line is its own group of words.
+  const lines = text
+    .split(/\n+/)
+    .map((line) => line.trim().split(/\s+/).filter(Boolean))
+    .filter((words) => words.length > 0);
 
   return (
     <Tag
@@ -53,19 +58,27 @@ export default function RevealText({ text, className, style, as = "h2", by = "wo
       initial="hidden"
       {...(onLoad ? { animate: "shown" } : { whileInView: "shown", viewport: { once: true, amount: 0.6 } })}
     >
-      {words.map((word, w) => (
-        <span key={w} aria-hidden="true" className="inline-block whitespace-nowrap">
-          {(by === "letter" ? Array.from(word) : [word]).map((piece, i) => (
-            // The padding keeps descenders (g, y, p) from being cut off by the mask.
-            <span key={i} className="inline-block overflow-hidden align-bottom pb-[0.14em] -mb-[0.14em]">
-              <motion.span className="inline-block" variants={item}>
-                {piece}
-              </motion.span>
-            </span>
+      {lines.map((words, l) => (
+        <Fragment key={l}>
+          {words.map((word, w) => (
+            <Fragment key={w}>
+              <span aria-hidden="true" className="inline-block whitespace-nowrap">
+                {(by === "letter" ? Array.from(word) : [word]).map((piece, i) => (
+                  // The padding keeps descenders (g, y, p) from being cut off by the mask.
+                  <span key={i} className="inline-block overflow-hidden align-bottom pb-[0.14em] -mb-[0.14em]">
+                    <motion.span className="inline-block" variants={item}>
+                      {piece}
+                    </motion.span>
+                  </span>
+                ))}
+              </span>
+              {/* The space sits between the word boxes, not inside one: trailing spaces inside an inline-block are
+                  dropped, which glued the words together. Here it is a normal space, so a long title can also wrap. */}
+              {w < words.length - 1 && " "}
+            </Fragment>
           ))}
-          {/* A normal space, so a long title can wrap onto a second line on narrow screens. */}
-          {w < words.length - 1 && " "}
-        </span>
+          {l < lines.length - 1 && <br />}
+        </Fragment>
       ))}
     </Tag>
   );
