@@ -13,6 +13,15 @@ const nextConfig = {
       },
     ],
   },
+  async headers() {
+    return [
+      {
+        // Compressed clips in /public/media. Give a changed clip a new file name, because browsers keep these for a year.
+        source: '/media/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+    ];
+  },
 }
 
 export default nextConfig

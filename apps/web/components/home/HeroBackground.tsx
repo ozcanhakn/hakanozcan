@@ -64,7 +64,7 @@ export default function HeroBackground({
               src={src}
               muted
               playsInline
-              preload={index === 0 || index === 1 ? "auto" : "metadata"}
+              preload={index === active ? "auto" : "none"}
               onEnded={index === active ? next : undefined}
               onError={index === active ? next : undefined}
               className="h-full w-full object-cover"

@@ -1,8 +1,8 @@
 import { siteConfig } from "@/content/site";
 import { projects as defaultProjects } from "@/content/projects";
 
-export type BlockId = "tiles" | "books" | "writing" | "project" | "quote" | "cta";
-export const BLOCK_IDS: BlockId[] = ["tiles", "books", "writing", "project", "quote", "cta"];
+export type BlockId = "tiles" | "focus" | "books" | "writing" | "project" | "quote" | "cta";
+export const BLOCK_IDS: BlockId[] = ["tiles", "focus", "books", "writing", "project", "quote", "cta"];
 
 export interface Book {
   id: string;
@@ -86,6 +86,19 @@ export interface Tile {
   title: string;
   body: string;
   image: string;
+  href: string;
+}
+
+/** One column of the “focus” block: research, interests or the kind of collaboration being sought. */
+export interface FocusArea {
+  /** Becomes the #anchor of the column, so a menu link like /#research can jump to it. */
+  id: string;
+  title: string;
+  body: string;
+  /** Short keywords shown as chips. */
+  tags: string[];
+  /** Optional link under the text. */
+  linkLabel: string;
   href: string;
 }
 
@@ -186,6 +199,7 @@ export interface SiteSettings {
   blocks: {
     /** `columns` is the card count per row on wide screens (1-6). `rows` caps the grid height: 0 shows every card. */
     tiles: { enabled: boolean; eyebrow: string; title: string; intro: string; columns: number; rows: number; items: Tile[] };
+    focus: { enabled: boolean; eyebrow: string; title: string; intro: string; items: FocusArea[] };
     books: { enabled: boolean; eyebrow: string; title: string; count: number; linkLabel: string };
     writing: { enabled: boolean; eyebrow: string; title: string; count: number; linkLabel: string };
     project: { enabled: boolean; eyebrow: string; title: string };
@@ -240,6 +254,38 @@ export const defaultSettings: SiteSettings = {
       columns: 4,
       rows: 0,
       items: siteConfig.focusAreas.map((area) => ({ ...area, image: "", href: "/projects" })),
+    },
+    focus: {
+      enabled: true,
+      eyebrow: "Focus",
+      title: "Research, interests and collaboration",
+      intro: "The research I publish, the questions I follow most closely, and the people and institutions I would like to work with.",
+      items: [
+        {
+          id: "research",
+          title: "Research & Publications",
+          body: "Independent research and long-form writing on AI, security and intelligence systems, written to stand on its own and to be shared with think tanks, fellowships and research institutions.",
+          tags: [],
+          linkLabel: "Read the writing",
+          href: "/blog",
+        },
+        {
+          id: "interests",
+          title: "Strategic Interests",
+          body: "The questions I follow most closely, where technology, policy and power meet.",
+          tags: ["AI policy", "Geopolitical intelligence", "Defense technology", "Financial systems"],
+          linkLabel: "",
+          href: "",
+        },
+        {
+          id: "engagement",
+          title: "Professional Engagement",
+          body: "I am open to collaboration with international researchers, institutions and executives: joint research, advisory work and projects where technology meets strategy.",
+          tags: [],
+          linkLabel: "Start a conversation",
+          href: "/contact",
+        },
+      ],
     },
     books: { enabled: true, eyebrow: "Books", title: "The books on my bookshelf", count: 3, linkLabel: "Explore books" },
     writing: { enabled: true, eyebrow: "Writing", title: "Latest from my notes", count: 3, linkLabel: "All writing" },
@@ -377,9 +423,32 @@ const link = (value: unknown, fallback: string) => {
   return trimmed === "" || LINK_PATTERN.test(trimmed) ? trimmed : fallback;
 };
 
+/**
+ * Clips that used to be served from Supabase Storage and now ship with the site, compressed, in /public/media.
+ * Saved settings still hold the old Supabase addresses, so they are mapped here: the free Supabase plan only
+ * includes 5 GB of traffic a month and these clips used up all of it.
+ */
+const MOVED_MEDIA = new Set([
+  "gemini_generated_video_0aa51fb4.mp4",
+  "gemini_generated_video_16f9c87e.mp4",
+  "gemini_generated_video_ef4577ee.mp4",
+  "hero-cybersecurity_animated.mp4",
+  "hero-dawn_lake_mountains.mp4",
+  "hero-medusa_jellyfish.mp4",
+  "hero-robotic_video.mp4",
+  "hero-satellite_video.mp4",
+  "hero-slowly_rotating_network.mp4",
+]);
+const SUPABASE_MEDIA = /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public\/site-media\/([^/?#]+)$/i;
+
+const localMedia = (address: string) => {
+  const name = SUPABASE_MEDIA.exec(address)?.[1];
+  return name && MOVED_MEDIA.has(name) ? `/media/${name}` : address;
+};
+
 const image = (value: unknown, fallback: string) => {
   if (typeof value !== "string") return fallback;
-  const trimmed = value.trim().slice(0, 1000);
+  const trimmed = localMedia(value.trim().slice(0, 1000));
   return trimmed === "" || IMAGE_PATTERN.test(trimmed) ? trimmed : fallback;
 };
 
@@ -489,6 +558,7 @@ export function mergeSettings(stored: unknown): SiteSettings {
     .join(" ");
 
   const tiles = b("tiles");
+  const focus = b("focus");
   const books = b("books");
   const booksPage = isRecord(stored.books) && isRecord(stored.books.page) ? stored.books.page : {};
   const writing = b("writing");
@@ -499,7 +569,13 @@ export function mergeSettings(stored: unknown): SiteSettings {
   const order = Array.isArray(stored.order)
     ? stored.order.filter((id, index, all): id is BlockId => BLOCK_IDS.includes(id as BlockId) && all.indexOf(id) === index)
     : [];
-  for (const id of BLOCK_IDS) if (!order.includes(id)) order.push(id);
+  // A block added after the settings were saved goes where it sits in the default order, not at the very end.
+  for (const [position, id] of BLOCK_IDS.entries()) {
+    if (order.includes(id)) continue;
+    const after = BLOCK_IDS.slice(position + 1).find((other) => order.includes(other));
+    if (after) order.splice(order.indexOf(after), 0, id);
+    else order.push(id);
+  }
 
   const count = typeof writing.count === "number" ? Math.min(6, Math.max(1, Math.round(writing.count))) : d.blocks.writing.count;
 
@@ -541,6 +617,26 @@ export function mergeSettings(stored: unknown): SiteSettings {
         items: list(tiles.items, legacyAreas.length > 0 ? legacyAreas : d.blocks.tiles.items, 24, (item) => {
           const title = opt(item.title, "", 80);
           return title ? { title, body: opt(item.body, "", 400), image: image(item.image, ""), href: link(item.href, "") } : null;
+        }),
+      },
+      focus: {
+        enabled: flag(focus.enabled, d.blocks.focus.enabled),
+        eyebrow: opt(focus.eyebrow, d.blocks.focus.eyebrow, 60),
+        title: str(focus.title, d.blocks.focus.title, 120),
+        intro: opt(focus.intro, d.blocks.focus.intro, 600),
+        items: list(focus.items, d.blocks.focus.items, 6, (item): FocusArea | null => {
+          const title = opt(item.title, "", 80);
+          if (!title) return null;
+          return {
+            id: slugId(opt(item.id, "", 40) || title),
+            title,
+            body: opt(item.body, "", 600),
+            tags: Array.isArray(item.tags)
+              ? item.tags.filter((tag): tag is string => typeof tag === "string" && tag.trim().length > 0).map((tag) => tag.trim().slice(0, 40)).slice(0, 8)
+              : [],
+            linkLabel: opt(item.linkLabel, "", 40),
+            href: link(item.href, ""),
+          };
         }),
       },
       books: {

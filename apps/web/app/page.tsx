@@ -1,5 +1,6 @@
 import Books from "@/components/home/Books";
 import Cta from "@/components/home/Cta";
+import Focus from "@/components/home/Focus";
 import Hero from "@/components/home/Hero";
 import ProjectBlock from "@/components/home/ProjectBlock";
 import Quote from "@/components/home/Quote";
@@ -17,6 +18,7 @@ export default async function Page() {
 
   const renderers = {
     tiles: () => blocks.tiles.enabled && <Tiles block={blocks.tiles} />,
+    focus: () => blocks.focus.enabled && <Focus block={blocks.focus} />,
     books: () => blocks.books.enabled && <Books block={blocks.books} books={settings.books.items} />,
     writing: () => blocks.writing.enabled && <Writing block={blocks.writing} entries={entries} />,
     project: () => blocks.project.enabled && <ProjectBlock block={blocks.project} projects={settings.projects} />,

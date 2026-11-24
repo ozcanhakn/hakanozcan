@@ -2,7 +2,9 @@ import { requireAdmin } from "@/lib/admin-auth";
 
 const BUCKET = "site-media";
 const IMAGE_LIMIT = 10 * 1024 * 1024;
-const VIDEO_LIMIT = 40 * 1024 * 1024; // Supabase Storage accepts up to 50 MB per file by default.
+// Every visitor downloads these, and the free Supabase plan includes only 5 GB of traffic a month,
+// so keep clips short and small (a 6-10 second 720p clip is usually 1-3 MB once compressed).
+const VIDEO_LIMIT = 15 * 1024 * 1024;
 const TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -45,7 +47,10 @@ export async function POST(request: Request) {
   }
   const isVideo = type.startsWith("video/");
   if (size > (isVideo ? VIDEO_LIMIT : IMAGE_LIMIT)) {
-    return Response.json({ error: isVideo ? "The video is larger than 40 MB." : "The image is larger than 10 MB." }, { status: 400 });
+    return Response.json(
+      { error: isVideo ? "The video is larger than 15 MB. Compress it or trim it to a few seconds first." : "The image is larger than 10 MB." },
+      { status: 400 },
+    );
   }
 
   const headers = { apikey: key, Authorization: `Bearer ${key}` };

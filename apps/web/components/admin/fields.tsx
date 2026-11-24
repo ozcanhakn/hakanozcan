@@ -75,7 +75,12 @@ export function ImageField({ label, value, onChange }: { label: string; value: s
         setError(data?.error ?? "The file could not be uploaded.");
         return;
       }
-      const sent = await fetch(data.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+      // File names are unique, so browsers and the CDN may keep the file for a year instead of re-downloading it.
+      const sent = await fetch(data.uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type, "Cache-Control": "max-age=31536000" },
+        body: file,
+      });
       if (!sent.ok) setError("The file could not be uploaded.");
       else onChange(data.url);
     } catch {

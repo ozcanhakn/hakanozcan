@@ -17,7 +17,7 @@ export default function SiteImage({
   className?: string;
   priority?: boolean;
 }) {
-  if (isVideo(src)) return <SiteVideo src={src} className={className} />;
+  if (isVideo(src)) return <SiteVideo src={src} className={className} priority={priority} />;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element

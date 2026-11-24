@@ -8,6 +8,7 @@ import type { BlockId, SiteSettings } from "@/lib/settings";
 
 const BLOCK_LABELS: Record<BlockId, { name: string; hint: string }> = {
   tiles: { name: "Topic cards", hint: "Large image cards, like “Explore work” on Gates Notes." },
+  focus: { name: "Research, interests & collaboration", hint: "Three text columns: Research & Publications, Strategic Interests, Professional Engagement." },
   books: { name: "Books", hint: "Your latest or featured books. Add them in the Books tab." },
   writing: { name: "Latest writing", hint: "Newest site posts and Medium articles." },
   project: { name: "Featured projects", hint: "Projects marked as featured in the Projects tab." },
@@ -40,6 +41,8 @@ export default function HomeTab({ settings, onSave }: Props) {
   const [hero, setHero] = useState(settings.hero);
   const [order, setOrder] = useState(settings.order);
   const [blocks, setBlocks] = useState(settings.blocks);
+  // Keywords are typed as one comma separated line, so they are kept as text while editing (same as project tags).
+  const [tagText, setTagText] = useState<string[]>(settings.blocks.focus.items.map((area) => area.tags.join(", ")));
   const [status, setStatus] = useState<Status>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -49,7 +52,14 @@ export default function HomeTab({ settings, onSave }: Props) {
 
   const save = async () => {
     setIsSaving(true);
-    const error = await onSave({ ...settings, hero, order, blocks });
+    const focus = {
+      ...blocks.focus,
+      items: blocks.focus.items.map((area, index) => ({
+        ...area,
+        tags: (tagText[index] ?? "").split(",").map((tag) => tag.trim()).filter(Boolean),
+      })),
+    };
+    const error = await onSave({ ...settings, hero, order, blocks: { ...blocks, focus } });
     setStatus(error ? { kind: "error", text: error } : { kind: "ok", text: "Saved. The home page updates within a minute." });
     setIsSaving(false);
   };
@@ -63,6 +73,9 @@ export default function HomeTab({ settings, onSave }: Props) {
 
   const updateTile = (index: number, patch: Partial<(typeof blocks.tiles.items)[number]>) =>
     patchBlock("tiles", { items: blocks.tiles.items.map((tile, i) => (i === index ? { ...tile, ...patch } : tile)) });
+
+  const updateArea = (index: number, patch: Partial<(typeof blocks.focus.items)[number]>) =>
+    patchBlock("focus", { items: blocks.focus.items.map((area, i) => (i === index ? { ...area, ...patch } : area)) });
 
   const fields: Record<BlockId, React.ReactNode> = {
     tiles: (
@@ -143,6 +156,77 @@ export default function HomeTab({ settings, onSave }: Props) {
             </button>
           )}
           <p className="text-xs text-stone">Cards with an empty title are dropped when you save.</p>
+        </div>
+      </div>
+    ),
+    focus: (
+      <div className="space-y-5">
+        <div className="grid md:grid-cols-2 gap-6">
+          <TextField label="Small label" value={blocks.focus.eyebrow} max={60} onChange={(eyebrow) => patchBlock("focus", { eyebrow })} />
+          <TextField label="Heading" value={blocks.focus.title} max={120} onChange={(title) => patchBlock("focus", { title })} />
+        </div>
+        <TextField label="Introduction" rows={3} value={blocks.focus.intro} max={600} onChange={(intro) => patchBlock("focus", { intro })} />
+
+        <div className="space-y-4">
+          {blocks.focus.items.map((area, index) => (
+            <div key={index} className="border border-line bg-cream-deep/60 p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="font-display text-lg text-brass">{String(index + 1).padStart(2, "0")}</span>
+                <span className="flex items-center gap-4">
+                  <MoveButtons
+                    index={index}
+                    length={blocks.focus.items.length}
+                    onMove={(from, to) => {
+                      patchBlock("focus", { items: moveItem(blocks.focus.items, from, to) });
+                      setTagText((current) => moveItem(current, from, to));
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      patchBlock("focus", { items: blocks.focus.items.filter((_, i) => i !== index) });
+                      setTagText((current) => current.filter((_, i) => i !== index));
+                    }}
+                    className="text-xs text-red-800 underline underline-offset-4"
+                  >
+                    Remove
+                  </button>
+                </span>
+              </div>
+              <TextField label="Title" value={area.title} max={80} onChange={(title) => updateArea(index, { title })} />
+              <TextField label="Text" rows={3} value={area.body} max={600} onChange={(body) => updateArea(index, { body })} />
+              <TextField
+                label="Keywords (separated by commas)"
+                value={tagText[index] ?? ""}
+                max={300}
+                placeholder="AI policy, Defense technology"
+                onChange={(value) => setTagText((current) => current.map((text, i) => (i === index ? value : text)))}
+              />
+              <div className="grid md:grid-cols-2 gap-6">
+                <TextField label="Link text (optional)" value={area.linkLabel} max={40} onChange={(linkLabel) => updateArea(index, { linkLabel })} />
+                <TextField label="Link address" value={area.href} max={500} placeholder="/contact" onChange={(href) => updateArea(index, { href })} />
+              </div>
+              <TextField
+                label="Anchor (for menu links like /#research)"
+                value={area.id}
+                max={40}
+                onChange={(id) => updateArea(index, { id })}
+              />
+            </div>
+          ))}
+          {blocks.focus.items.length < 6 && (
+            <button
+              type="button"
+              onClick={() => {
+                patchBlock("focus", { items: [...blocks.focus.items, { id: "", title: "", body: "", tags: [], linkLabel: "", href: "" }] });
+                setTagText((current) => [...current, ""]);
+              }}
+              className="text-sm text-navy underline underline-offset-4"
+            >
+              Add a column
+            </button>
+          )}
+          <p className="text-xs text-stone">Columns with an empty title are dropped when you save.</p>
         </div>
       </div>
     ),

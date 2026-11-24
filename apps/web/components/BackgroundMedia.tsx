@@ -8,7 +8,8 @@ import SiteImage from "@/components/SiteImage";
 export default function BackgroundMedia({ sources }: { sources: string[] }) {
   if (sources.length === 0) return null;
   if (sources.length === 1) {
-    return <SiteImage src={sources[0]!} priority className="absolute inset-0 -z-20 h-full w-full object-cover" />;
+    // Not `priority`: these sit behind sections far down the page, so a clip should only load when it is near the screen.
+    return <SiteImage src={sources[0]!} className="absolute inset-0 -z-20 h-full w-full object-cover" />;
   }
   return <HeroBackground sources={sources} />;
 }
