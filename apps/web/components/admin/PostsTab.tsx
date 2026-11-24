@@ -15,9 +15,21 @@ interface Draft {
   thumbnail: string;
   content: string;
   published: boolean;
+  area: string;
+  sourceUrl: string;
 }
 
-const emptyDraft: Draft = { id: null, title: "", slug: "", summary: "", thumbnail: "", content: "", published: true };
+const emptyDraft: Draft = {
+  id: null,
+  title: "",
+  slug: "",
+  summary: "",
+  thumbnail: "",
+  content: "",
+  published: true,
+  area: "",
+  sourceUrl: "",
+};
 
 const TURKISH: Record<string, string> = { ç: "c", ğ: "g", ı: "i", ö: "o", ş: "s", ü: "u" };
 
@@ -30,9 +42,17 @@ function slugify(value: string): string {
     .slice(0, 100);
 }
 
-export default function PostsTab({ onUnauthorized }: { onUnauthorized: () => void }) {
+export default function PostsTab({
+  onUnauthorized,
+  areas,
+}: {
+  onUnauthorized: () => void;
+  /** The home page focus areas a post can be filed under (Research & Publications, ...). */
+  areas: { id: string; title: string }[];
+}) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [supportsPublished, setSupportsPublished] = useState(false);
+  const [supportsAreas, setSupportsAreas] = useState(false);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [slugTouched, setSlugTouched] = useState(false);
   const [preview, setPreview] = useState(false);
@@ -44,13 +64,14 @@ export default function PostsTab({ onUnauthorized }: { onUnauthorized: () => voi
     const res = await fetch("/api/admin/posts");
     if (res.status === 401) return onUnauthorized();
     const data = (await res.json().catch(() => null)) as
-      | { posts?: Post[]; supportsPublished?: boolean; error?: string }
+      | { posts?: Post[]; supportsPublished?: boolean; supportsAreas?: boolean; error?: string }
       | null;
     if (!res.ok) {
       setStatus({ kind: "error", text: data?.error ?? "Could not load posts." });
     } else {
       setPosts(data?.posts ?? []);
       setSupportsPublished(Boolean(data?.supportsPublished));
+      setSupportsAreas(Boolean(data?.supportsAreas));
     }
     setIsLoading(false);
   }, [onUnauthorized]);
@@ -77,6 +98,8 @@ export default function PostsTab({ onUnauthorized }: { onUnauthorized: () => voi
       thumbnail: post.thumbnail ?? "",
       content: post.content ?? "",
       published: post.published !== false,
+      area: post.area ?? "",
+      sourceUrl: post.source_url ?? "",
     });
     setSlugTouched(true);
     setPreview(false);
@@ -152,6 +175,11 @@ export default function PostsTab({ onUnauthorized }: { onUnauthorized: () => voi
                     {post.published === false && (
                       <span className="mr-2 border border-brass px-1.5 py-0.5 text-brass uppercase tracking-wider">Draft</span>
                     )}
+                    {post.area && (
+                      <span className="mr-2 border border-line px-1.5 py-0.5 uppercase tracking-wider">
+                        {areas.find((area) => area.id === post.area)?.title ?? post.area}
+                      </span>
+                    )}
                     {new Date(post.created_at).toLocaleDateString("en-GB")} · /blog/{post.slug}
                   </span>
                 </button>
@@ -201,6 +229,42 @@ export default function PostsTab({ onUnauthorized }: { onUnauthorized: () => voi
             onChange={(e) => update({ summary: e.target.value })}
             className={`${fieldClass} resize-none`}
           />
+        </div>
+
+        <div className={supportsAreas ? "" : "opacity-60"}>
+          <label htmlFor="area" className={labelClass}>Section on the home page</label>
+          <select
+            id="area"
+            value={draft.area}
+            disabled={!supportsAreas}
+            onChange={(e) => update({ area: e.target.value })}
+            className={fieldClass}
+          >
+            <option value="">None (an ordinary post)</option>
+            {areas.map((area) => (
+              <option key={area.id} value={area.id}>{area.title}</option>
+            ))}
+          </select>
+          <p className="text-xs text-stone mt-2">
+            {supportsAreas
+              ? "A post filed under a section is listed in that section on the home page and on its own page (/focus/…). It also stays in Writing."
+              : "Sections for posts are not enabled yet. Run supabase/admin-panel.sql in Supabase to turn this on."}
+          </p>
+        </div>
+
+        <div className={supportsAreas ? "" : "opacity-60"}>
+          <label htmlFor="sourceUrl" className={labelClass}>Also published elsewhere (optional link)</label>
+          <input
+            id="sourceUrl"
+            type="url"
+            maxLength={500}
+            disabled={!supportsAreas}
+            placeholder="https://medium.com/…"
+            value={draft.sourceUrl}
+            onChange={(e) => update({ sourceUrl: e.target.value })}
+            className={fieldClass}
+          />
+          <p className="text-xs text-stone mt-2">Shown under the post as “Also published on …” with this link.</p>
         </div>
 
         <ImageField label="Cover image (optional)" value={draft.thumbnail} onChange={(thumbnail) => update({ thumbnail })} />

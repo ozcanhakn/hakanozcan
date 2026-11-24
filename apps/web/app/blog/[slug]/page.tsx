@@ -1,10 +1,11 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import Markdown from "@/components/Markdown";
-import { estimateReadTime, formatDate, getPost } from "@/lib/blog";
+import { estimateReadTime, formatDate, getPost, sourceHost } from "@/lib/blog";
+import { getSiteSettings } from "@/lib/settings";
 
 export const revalidate = 60;
 
@@ -24,15 +25,19 @@ export default async function BlogDetail({ params }: Props) {
   const post = await getPost(slug);
   if (!post) notFound();
 
+  // A post filed under a home page section links back to that section's page.
+  const area = post.area ? (await getSiteSettings()).blocks.focus.items.find((item) => item.id === post.area) : undefined;
+  const source = post.source_url && /^https?:\/\//i.test(post.source_url) ? post.source_url : "";
+
   return (
     <article>
       <div className="max-w-3xl mx-auto px-6 lg:px-8 pt-32 pb-16 md:pt-40 md:pb-24">
         <Link
-          href="/blog"
+          href={area ? `/focus/${area.id}` : "/blog"}
           className="inline-flex items-center gap-2 text-sm text-stone hover:text-navy transition-colors mb-12"
         >
           <ArrowLeft size={15} strokeWidth={1.75} />
-          All writing
+          {area ? area.title : "All writing"}
         </Link>
 
         <header className="mb-12">
@@ -51,6 +56,21 @@ export default async function BlogDetail({ params }: Props) {
         )}
 
         <Markdown>{post.content ?? ""}</Markdown>
+
+        {source && (
+          <p className="mt-14 border-t border-line pt-6 text-[15px] text-stone">
+            Also published on{" "}
+            <a
+              href={source}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-semibold text-ink underline underline-offset-4 hover:text-navy"
+            >
+              {sourceHost(source) || "the original"}
+              <ArrowUpRight size={14} strokeWidth={2} />
+            </a>
+          </p>
+        )}
       </div>
     </article>
   );

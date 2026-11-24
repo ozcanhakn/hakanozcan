@@ -21,6 +21,12 @@ create policy "Public can read site settings"
   using (true);
 -- No insert/update policy on purpose: only the admin panel (service role key) can write.
 
+-- 2b) File a post under a home page section (Research & Publications, ...) and link to where else it was published.
+-- Posts keep working without these columns; the admin panel just shows that the feature is not enabled yet.
+alter table public.blogs
+  add column if not exists area text,
+  add column if not exists source_url text;
+
 -- 3) OPTIONAL but recommended: make drafts private at the database level.
 -- The site already hides unpublished posts, but while an old "read everything" policy
 -- exists on public.blogs, anyone who calls the Supabase API directly could still read drafts.

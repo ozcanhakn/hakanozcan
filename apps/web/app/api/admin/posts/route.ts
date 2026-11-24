@@ -22,7 +22,9 @@ export async function POST(request: Request) {
   const result = await adminCreatePost(parsed.value);
   if (!result.ok) return Response.json({ error: result.error }, { status: result.status });
 
+  revalidatePath("/");
   revalidatePath("/blog");
+  revalidatePath("/focus/[id]", "page");
   revalidatePath(`/blog/${result.data.slug}`);
   return Response.json({ post: result.data }, { status: 201 });
 }

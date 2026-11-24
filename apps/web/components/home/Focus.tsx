@@ -1,4 +1,5 @@
 import SmartLink from "@/components/SmartLink";
+import { formatDate, type Post } from "@/lib/blog";
 import type { SiteSettings } from "@/lib/settings";
 
 // Full class names so Tailwind can see them. Phones always get one column.
@@ -11,8 +12,14 @@ const GRID: Record<number, string> = {
   6: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
 };
 
-/** Text-led columns for research, interests and the kind of collaboration being sought. */
-export default function Focus({ block }: { block: SiteSettings["blocks"]["focus"] }) {
+/** How many of the newest posts each column lists; the column's own link leads to the rest. */
+const POSTS_PER_COLUMN = 3;
+
+/**
+ * Text-led columns for research, interests and the kind of collaboration being sought.
+ * `posts` are the published posts filed under a column (matched by the column's id).
+ */
+export default function Focus({ block, posts }: { block: SiteSettings["blocks"]["focus"]; posts: Post[] }) {
   const items = block.items;
   if (items.length === 0) return null;
 
@@ -28,7 +35,9 @@ export default function Focus({ block }: { block: SiteSettings["blocks"]["focus"
         </div>
 
         <div className={`grid ${GRID[Math.min(6, items.length)]} gap-x-10 gap-y-12`}>
-          {items.map((item, index) => (
+          {items.map((item, index) => {
+            const latest = posts.filter((post) => post.area === item.id).slice(0, POSTS_PER_COLUMN);
+            return (
             <article key={`${item.id}-${index}`} id={item.id} className="scroll-mt-24 border-t-2 border-ink pt-6 flex flex-col">
               <p className="font-head text-sm font-bold text-brass mb-4">{String(index + 1).padStart(2, "0")}</p>
               <h3 className="font-head text-[26px] font-bold leading-[1.1] tracking-tight text-ink">{item.title}</h3>
@@ -44,6 +53,21 @@ export default function Focus({ block }: { block: SiteSettings["blocks"]["focus"
                 </ul>
               )}
 
+              {latest.length > 0 && (
+                <ul className="mt-6 border-t border-line">
+                  {latest.map((post) => (
+                    <li key={post.id} className="border-b border-line">
+                      <SmartLink href={`/blog/${post.slug}`} className="group block py-3">
+                        <span className="block text-[16px] font-bold leading-snug text-ink group-hover:text-brass transition-colors">
+                          {post.title}
+                        </span>
+                        <span className="block mt-1 text-[13px] text-stone">{formatDate(post.created_at)}</span>
+                      </SmartLink>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
               {item.href && item.linkLabel && (
                 <SmartLink
                   href={item.href}
@@ -54,7 +78,8 @@ export default function Focus({ block }: { block: SiteSettings["blocks"]["focus"
                 </SmartLink>
               )}
             </article>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

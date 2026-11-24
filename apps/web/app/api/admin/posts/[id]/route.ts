@@ -20,7 +20,9 @@ export async function PUT(request: Request, { params }: Context) {
   const result = await adminUpdatePost(id, parsed.value);
   if (!result.ok) return Response.json({ error: result.error }, { status: result.status });
 
+  revalidatePath("/");
   revalidatePath("/blog");
+  revalidatePath("/focus/[id]", "page");
   revalidatePath(`/blog/${result.data.slug}`);
   return Response.json({ post: result.data });
 }
@@ -35,7 +37,9 @@ export async function DELETE(request: Request, { params }: Context) {
   const result = await adminDeletePost(id);
   if (!result.ok) return Response.json({ error: result.error }, { status: result.status });
 
+  revalidatePath("/");
   revalidatePath("/blog");
+  revalidatePath("/focus/[id]", "page");
   revalidatePath(`/blog/${result.data.slug}`);
   return Response.json({ ok: true });
 }

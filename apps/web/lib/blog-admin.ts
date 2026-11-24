@@ -7,6 +7,10 @@ export interface PostInput {
   thumbnail: string | null;
   content: string;
   published: boolean;
+  /** Id of the home page focus area ("research", ...) or "" for an ordinary post. */
+  area: string;
+  /** Link to the same text published elsewhere, or "". */
+  sourceUrl: string;
 }
 
 type ParseResult = { ok: true; value: PostInput } | { ok: false; error: string };
@@ -29,6 +33,8 @@ export function parsePostInput(body: unknown): ParseResult {
   const summary = text("summary");
   const thumbnail = text("thumbnail");
   const content = typeof raw.content === "string" ? raw.content : "";
+  const area = text("area");
+  const sourceUrl = text("sourceUrl");
 
   if (!title || title.length > 200) return { ok: false, error: "Title is required (max 200 characters)." };
   if (!SLUG_PATTERN.test(slug) || slug.length > 100) {
@@ -40,9 +46,14 @@ export function parsePostInput(body: unknown): ParseResult {
     return { ok: false, error: "Thumbnail must be an http(s) URL." };
   }
 
+  if (!/^[a-z0-9-]{0,40}$/.test(area)) return { ok: false, error: "Invalid area." };
+  if (sourceUrl && (!/^https?:\/\/\S+$/i.test(sourceUrl) || sourceUrl.length > 500)) {
+    return { ok: false, error: "The link to the other place must be an http(s) address." };
+  }
+
   return {
     ok: true,
-    value: { title, slug, summary, thumbnail: thumbnail || null, content, published: raw.published !== false },
+    value: { title, slug, summary, thumbnail: thumbnail || null, content, published: raw.published !== false, area, sourceUrl },
   };
 }
 
@@ -75,18 +86,36 @@ async function supportsPublished(db: NonNullable<ReturnType<typeof supabase>>): 
   return res.ok;
 }
 
-/** The `published` field is only sent when the column exists. */
-function columns(input: PostInput, withPublished: boolean) {
-  const { published, ...rest } = input;
-  return withPublished ? { ...rest, published } : rest;
+/** True once `supabase/admin-panel.sql` has added the `area` and `source_url` columns. */
+async function supportsAreas(db: NonNullable<ReturnType<typeof supabase>>): Promise<boolean> {
+  const res = await fetch(`${db.url}?select=area,source_url&limit=0`, { headers: db.headers, cache: "no-store" });
+  return res.ok;
 }
 
-export async function adminListPosts(): Promise<AdminResult<{ posts: Post[]; supportsPublished: boolean }>> {
+/** The `published`, `area` and `source_url` fields are only sent when their columns exist. */
+async function columns(db: NonNullable<ReturnType<typeof supabase>>, input: PostInput) {
+  const { title, slug, summary, thumbnail, content, published, area, sourceUrl } = input;
+  const [withPublished, withAreas] = await Promise.all([supportsPublished(db), supportsAreas(db)]);
+  return {
+    title,
+    slug,
+    summary,
+    thumbnail,
+    content,
+    ...(withPublished ? { published } : {}),
+    ...(withAreas ? { area: area || null, source_url: sourceUrl || null } : {}),
+  };
+}
+
+export async function adminListPosts(): Promise<
+  AdminResult<{ posts: Post[]; supportsPublished: boolean; supportsAreas: boolean }>
+> {
   const db = supabase();
   if (!db) return NOT_CONFIGURED;
   const res = await fetch(`${db.url}?select=*&order=created_at.desc`, { headers: db.headers, cache: "no-store" });
   if (!res.ok) return failure(res);
-  return { ok: true, data: { posts: (await res.json()) as Post[], supportsPublished: await supportsPublished(db) } };
+  const [published, areas] = await Promise.all([supportsPublished(db), supportsAreas(db)]);
+  return { ok: true, data: { posts: (await res.json()) as Post[], supportsPublished: published, supportsAreas: areas } };
 }
 
 export async function adminCreatePost(input: PostInput): Promise<AdminResult<Post>> {
@@ -96,7 +125,7 @@ export async function adminCreatePost(input: PostInput): Promise<AdminResult<Pos
     method: "POST",
     headers: db.headers,
     body: JSON.stringify({
-      ...columns(input, await supportsPublished(db)),
+      ...(await columns(db, input)),
       created_at: new Date().toISOString(),
     }),
   });
@@ -112,7 +141,7 @@ export async function adminUpdatePost(id: string, input: PostInput): Promise<Adm
     method: "PATCH",
     headers: db.headers,
     body: JSON.stringify({
-      ...columns(input, await supportsPublished(db)),
+      ...(await columns(db, input)),
       updated_at: new Date().toISOString(),
     }),
   });

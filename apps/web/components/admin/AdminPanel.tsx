@@ -102,7 +102,12 @@ export default function AdminPanel() {
           ))}
         </nav>
 
-        {tab === "posts" && <PostsTab onUnauthorized={onUnauthorized} />}
+        {tab === "posts" && (
+          <PostsTab
+            onUnauthorized={onUnauthorized}
+            areas={settings?.blocks.focus.items.map((area) => ({ id: area.id, title: area.title })) ?? []}
+          />
+        )}
 
         {tab !== "posts" && (
           <>
