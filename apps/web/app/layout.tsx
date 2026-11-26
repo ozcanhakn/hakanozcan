@@ -53,10 +53,12 @@ export default async function RootLayout({
   const settings = await getSiteSettings();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    // overflow-x-clip: the full-width hero is 100vw, which includes the scrollbar, so the few extra pixels are cut off
+    // instead of making the page scroll sideways.
+    <html lang="en" suppressHydrationWarning className="overflow-x-clip">
       <body
         style={{ "--site-accent": settings.brand.accent } as CSSProperties}
-        className={`${fontSans.variable} ${fontMono.variable} ${fontDisplay.variable} ${fontHead.variable} bg-[#f5f5f7] text-ink font-sans antialiased min-h-screen`}
+        className={`${fontSans.variable} ${fontMono.variable} ${fontDisplay.variable} ${fontHead.variable} bg-[#f5f5f7] text-ink font-sans antialiased min-h-screen overflow-x-clip`}
       >
         <Providers>
           {/* Gray page with a white column in the middle, like Gates Notes. */}

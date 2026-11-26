@@ -7,7 +7,9 @@ export default function Hero({ hero }: { hero: SiteSettings["hero"] }) {
   const backgrounds = [hero.image, ...hero.moreMedia].filter(Boolean);
 
   return (
-    <section id="about" className="relative isolate scroll-mt-20 bg-ink text-white overflow-hidden">
+    // The page sits in a centered white column; the hero alone breaks out of it to the full window width,
+    // so its videos run edge to edge while the text stays aligned with the rest of the page.
+    <section id="about" className="relative isolate scroll-mt-20 w-screen ml-[calc(50%-50vw)] bg-ink text-white overflow-hidden">
       {backgrounds.length === 0 && (
         <>
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,var(--site-accent),transparent_62%)] opacity-80" />
