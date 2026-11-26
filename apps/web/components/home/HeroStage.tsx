@@ -35,7 +35,8 @@ export default function HeroStage({ sources, textHidden, children }: Props) {
         </>
       )}
 
-      <div className="max-w-6xl mx-auto px-6 lg:px-10 min-h-[78vh] md:min-h-[88vh] flex flex-col justify-end pb-14 md:pb-24 pt-36">
+      {/* 100svh: the whole first screen, measured without the mobile browser's address bar so nothing is cut off. */}
+      <div className="max-w-6xl mx-auto px-6 lg:px-10 min-h-[100svh] flex flex-col justify-end pb-14 md:pb-24 pt-36">
         {/* `inert` keeps the hidden buttons out of reach of the keyboard and screen readers. */}
         <div
           inert={hidden}
